@@ -8,6 +8,7 @@ Created on Sun Nov 26 16:19:44 2023
 # implement PathFinder Algorithm for use in FreeCell Solver
 
 ### SETUP SMALL SCALE FREECELL BOARD
+#-> traceback, falls ein error ist, dass sich das board nicht verändert! (take from stack, but cant put on pile!, take from freecell but cant put on stack...)
 
 ## Definition ungerichteten Graphs
 
@@ -153,8 +154,8 @@ class Pile:
         return False
         
     # FUNCTIONS #
-    @update
     @assert_length_1
+    @update
     def discard(self, card: list) -> None:
         ''' puts a card on the discard pile if the card fits on the other 
         card has to be a list of length 1 '''
@@ -206,8 +207,8 @@ class FC:
             fcs[i] = 0
         return fcs
     
-    @update
     @assert_length_1
+    @update
     def put(self, card: list) -> None:
         ''' put a card into the Free Cell if there is space
         puts the card into the first free space 
