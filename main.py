@@ -39,6 +39,9 @@ class Stack_Base:
         self.takable = self.get_takable()
 
     # MAGIC METHODS #
+    def __repr__(self):
+        return f"Stack with {self.stack}"
+    
     def __eq__(self, other):
         if self.stack == other.stack:
             return True
@@ -127,6 +130,9 @@ class Pile:
         self.highest = len(self.pile)
         
     # MAGIC METHODS #
+    def __repr__(self):
+        return f"Pile with {self.pile}"
+    
     def __eq__(self, other):
         if self.highest == other.highest:
             return True
@@ -157,12 +163,4 @@ class Board:
         return False
         
     
-p = Pile()
-p.discard(1)
-q = Pile()
-q.discard(1)
-print(p==q)
-p.discard(3)
-p.discard(2)
-p.discard(3)
-print(p==q)
+b = Board()
