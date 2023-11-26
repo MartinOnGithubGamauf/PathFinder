@@ -148,6 +148,79 @@ class Pile:
             pile.append(card)
         return
 
+
+class FC:
+    ''' Free Cells as a dictionary
+    0 represents an empty cell'''
+    
+    # CONFIGURATION VARIABLES #
+    AMOUNT = 5
+    
+    # DECORATORS #
+    def update(func):
+        def update_fcs(self, *args):
+            print("")
+            print(colored("Free Cells:", "red") + " Executing function " + colored(func.__name__, 'cyan') + " with args " + colored(args, "cyan"))
+            output = func(self, *args)
+            print("Free Cells updated")
+            print(self.fcs)
+            print("")
+            return output
+            
+        return update_fcs
+    
+    # INIT #
+    def __init__(self):
+        self.fcs = self.generate_fcs()
+        
+    # MAGIC METHODS #
+    def __repr__(self):
+        return f"Free Cells with {self.fcs}"
+    
+    def __eq__(self, other):
+        if len(self.fcs) == len(other.fcs):
+            if sorted([self.fcs[i] for i in range(len(self.fcs))]) == sorted([other.fcs[i] for i in range(len(other.fcs))]): # compare the sorted contents of the dicts 
+                return True
+        return False
+    
+    # FUCNTIONS #
+    def generate_fcs(self) -> dict:
+        fcs = {}
+        for i in range(self.AMOUNT):
+            fcs[i] = 0
+        return fcs
+    
+    @update
+    def put(self, item: list) -> None:
+        ''' put a card into the Free Cell if there is space
+        puts the card into the first free space 
+        if there is no space, 
+        item has to be a list of length 1 '''
+        assert type(item) == list, "card must be of type list"
+        assert len(item) == 1, "card must be a list of length 1"
+        item = item[0]
+        assert type(item) == int, "content of list must be an int"
+        assert item > 0, "number in list must be greater than 1"
+        fcs = self.fcs
+        for i in range(self.AMOUNT):
+            if fcs[i] == 0:
+                fcs[i] = item
+                return
+        raise IndexError("Free Cells are full!")
+        
+    @update 
+    def get(self, card: int) -> list:
+        ''' takes the desired card from the Free Cells
+        returns the card number if successful
+        returns empty list if the card could not be found '''
+        fcs = self.fcs
+        for i in range(self.AMOUNT):
+            if fcs[i] == card:
+                fcs[i] = 0
+                return [card]
+        return []
+    
+
 class Board:
     
     # INIT # 
@@ -163,4 +236,15 @@ class Board:
         return False
         
     
-b = Board()
+f = FC()
+f.put([10])
+f.put([3])
+f.put([3])
+f.put([4])
+f.put([5])
+print(f.get(10))
+print(f.get(3))
+print(f.get(5))
+f.put([20])
+print(f.get(10))
+print(f.get(3))
