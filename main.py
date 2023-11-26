@@ -13,6 +13,20 @@ Created on Sun Nov 26 16:19:44 2023
 
 from termcolor import colored
 
+# WRAPPERS #
+def assert_length_1(func):
+    def check_and_transform(self, item):
+        ''' checks for input and transforms list into int '''
+        assert type(item) == list, "card must be of type list"
+        assert len(item) == 1, "card must be a list of length 1"
+        item = item[0]
+        assert type(item) == int, "content of list must be an int"
+        assert item > 0, "number in list must be greater than 1"
+        output = func(self, item)
+        return output
+    return check_and_transform
+
+
 class Stack_Base:
     
     # DECORATORS #
@@ -140,8 +154,10 @@ class Pile:
         
     # FUNCTIONS #
     @update
-    def discard(self, card: int) -> None:
-        ''' puts a card on the discard pile if the card fits on the other '''
+    @assert_length_1
+    def discard(self, card: list) -> None:
+        ''' puts a card on the discard pile if the card fits on the other 
+        card has to be a list of length 1 '''
         pile = self.pile
         highest = self.highest
         if card == highest + 1:
@@ -191,20 +207,16 @@ class FC:
         return fcs
     
     @update
-    def put(self, item: list) -> None:
+    @assert_length_1
+    def put(self, card: list) -> None:
         ''' put a card into the Free Cell if there is space
         puts the card into the first free space 
         if there is no space, 
-        item has to be a list of length 1 '''
-        assert type(item) == list, "card must be of type list"
-        assert len(item) == 1, "card must be a list of length 1"
-        item = item[0]
-        assert type(item) == int, "content of list must be an int"
-        assert item > 0, "number in list must be greater than 1"
+        card has to be a list of length 1 '''
         fcs = self.fcs
         for i in range(self.AMOUNT):
             if fcs[i] == 0:
-                fcs[i] = item
+                fcs[i] = card
                 return
         raise IndexError("Free Cells are full!")
         
@@ -227,24 +239,18 @@ class Board:
     def __init__(self):
         self.stack = Stack()
         self.pile = Pile()
+        self.fcs = FC()
     
     # MAGIC METHODS #
+    def __repr__(self):
+        return f"Board containing: \n {self.pile} \n {self.fcs} \n {self.stack}"
+        
     def __eq__(self, other):
         if self.stack == other.stack:
             if self.pile == other.pile:
-                return True
+                if self.fcs == other.fcs:
+                    return True
         return False
         
     
-f = FC()
-f.put([10])
-f.put([3])
-f.put([3])
-f.put([4])
-f.put([5])
-print(f.get(10))
-print(f.get(3))
-print(f.get(5))
-f.put([20])
-print(f.get(10))
-print(f.get(3))
+b = Board()
