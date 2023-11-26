@@ -13,13 +13,13 @@ Created on Sun Nov 26 16:19:44 2023
 
 from termcolor import colored
 
-class Stack:
+class Stack_Base:
     
     # DECORATORS #
     def update(func):
-        def update_length(self, *args):
+        def update_stack(self, *args):
             print("")
-            print("Executing function " + colored(func.__name__, 'cyan') + " with args " + colored(args, "cyan"))
+            print(colored("Stack:", "red") + " Executing function " + colored(func.__name__, 'cyan') + " with args " + colored(args, "cyan"))
             output = func(self, *args)
             self.length = len(self.stack)
             self.takable = self.get_takable()
@@ -30,7 +30,7 @@ class Stack:
             print("")
             return output
             
-        return update_length
+        return update_stack
     
     # INIT #
     def __init__(self):
@@ -38,6 +38,12 @@ class Stack:
         self.length = len(self.stack)
         self.takable = self.get_takable()
 
+    # MAGIC METHODS #
+    def __eq__(self, other):
+        if self.stack == other.stack:
+            return True
+        return False
+    
     # FUNCTIONS #
     def get_takable(self) -> int:
         ''' iterates backwards through stack to determine amount of cards that can be taken away'''
@@ -75,22 +81,78 @@ class Stack:
             ret.append(stack.pop( (length-1) - (num_to_take-1) )) # pop highest takable card and add to return
         return ret
         
+    
+class Stack(Stack_Base):
+    ''' defines a Stack with cards from 1 to STACK_SIZE '''
+    
+    # CONFIGURATION VARIABLES #
+    STACK_SIZE = 10
+    
+    # INIT #
+    def __init__(self):
+        # fills stack and shuffles it
+        super().__init__()
+        for i in range(self.STACK_SIZE):
+            self.add(i+1)
+        self.shuffle()
+        
+    # FUNCTIONS #
+    @Stack_Base.update
+    def shuffle(self):
+        import random
+        random.shuffle(self.stack)
+
+
+class Pile:
+    ''' Discard Pile '''
+    
+    # DECORATORS #
+    def update(func):
+        def update_pile(self, *args):
+            print("")
+            print(colored("Pile:", "magenta") + " Executing function " + colored(func.__name__, 'cyan') + " with args " + colored(args, "cyan"))
+            output = func(self, *args)
+            print("Pile updated")
+            print(self.pile)
+            print(f"highest: {self.highest}")
+            print("")
+            return output
+        
+        return update_pile
+    
+    # INIT #
+    def __init__(self):
+        self.pile = []
+        self.highest = len(self.pile)
+        
+    
 
 class Board:
     
+    # INIT # 
     def __init__(self):
         self.stack = Stack()
-        
+    
+    # MAGIC METHODS #
+    def __eq__(self, other):
+        if self.stack == other.stack:
+            return True
+        return False
         
     
-b = Board()
 s = Stack()
 s.add(3)
 s.add(4)
 s.add(6)
 s.add(7)
+p = Stack()
+p.add(3)
+p.add(4)
+p.add(6)
+p.add(7)
+print(p==s)
 print(s.take(1))
 print(s.take(2))
 print(s.take(1))
 print(s.take(2))
-print(s.take(1))
+print(p==s)
