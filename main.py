@@ -112,6 +112,7 @@ class Pile:
             print("")
             print(colored("Pile:", "magenta") + " Executing function " + colored(func.__name__, 'cyan') + " with args " + colored(args, "cyan"))
             output = func(self, *args)
+            self.highest = len(self.pile)
             print("Pile updated")
             print(self.pile)
             print(f"highest: {self.highest}")
@@ -125,34 +126,33 @@ class Pile:
         self.pile = []
         self.highest = len(self.pile)
         
-    
+    # FUNCTIONS #
+    @update
+    def discard(self, card: int) -> None:
+        ''' puts a card on the discard pile if the card fits on the other '''
+        pile = self.pile
+        highest = self.highest
+        if card == highest + 1:
+            pile.append(card)
+        return
 
 class Board:
     
     # INIT # 
     def __init__(self):
         self.stack = Stack()
+        self.pile = Pile()
     
     # MAGIC METHODS #
     def __eq__(self, other):
         if self.stack == other.stack:
-            return True
+            if self.pile == other.pile:
+                return True
         return False
         
     
-s = Stack()
-s.add(3)
-s.add(4)
-s.add(6)
-s.add(7)
-p = Stack()
-p.add(3)
-p.add(4)
-p.add(6)
-p.add(7)
-print(p==s)
-print(s.take(1))
-print(s.take(2))
-print(s.take(1))
-print(s.take(2))
-print(p==s)
+p = Pile()
+p.discard(1)
+p.discard(3)
+p.discard(2)
+p.discard(3)
