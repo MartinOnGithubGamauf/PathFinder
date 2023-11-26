@@ -11,11 +11,15 @@ Created on Sun Nov 26 16:19:44 2023
 
 ## Definition ungerichteten Graphs
 
+from termcolor import colored
+
 class Stack:
     
     # DECORATORS #
     def update(func):
         def update_length(self, *args):
+            print("")
+            print("Executing function " + colored(func.__name__, 'cyan') + " with args " + colored(args, "cyan"))
             output = func(self, *args)
             self.length = len(self.stack)
             self.takable = self.get_takable()
@@ -58,9 +62,19 @@ class Stack:
     @update
     def take(self, num_to_take: int) -> list:
         ''' take the amount of num_to_take cards from the stack
-        if num_to_take < num_takable: returns the list of cards that were took
-        if num_to_take > num_takable: returns empty list '''
-        return 
+        if num_to_take > num_takable: returns empty list 
+        if num_to_take < num_takable: returns the list of cards that were took '''
+        assert num_to_take > 0, "input must be greater than 1"
+        takable = self.takable
+        if num_to_take > takable: 
+            return []
+        stack = self.stack
+        length = self.length
+        ret = []
+        for i in range(num_to_take):
+            ret.append(stack.pop( (length-1) - (num_to_take-1) )) # pop highest takable card and add to return
+        return ret
+        
 
 class Board:
     
@@ -75,3 +89,8 @@ s.add(3)
 s.add(4)
 s.add(6)
 s.add(7)
+print(s.take(1))
+print(s.take(2))
+print(s.take(1))
+print(s.take(2))
+print(s.take(1))
