@@ -126,6 +126,12 @@ class Pile:
         self.pile = []
         self.highest = len(self.pile)
         
+    # MAGIC METHODS #
+    def __eq__(self, other):
+        if self.highest == other.highest:
+            return True
+        return False
+        
     # FUNCTIONS #
     @update
     def discard(self, card: int) -> None:
@@ -153,6 +159,10 @@ class Board:
     
 p = Pile()
 p.discard(1)
+q = Pile()
+q.discard(1)
+print(p==q)
 p.discard(3)
 p.discard(2)
 p.discard(3)
+print(p==q)
