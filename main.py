@@ -27,6 +27,14 @@ def assert_list_length_1(func):
         return output
     return check_and_transform
 
+def assert_other(func):
+    def check_other(self, other):
+        ''' checks if other is the same class as self '''
+        assert isinstance(self, type(other))
+        output = func(self, other)
+        return output
+    return check_other
+
 
 class Card:
     ''' french playing cards 
@@ -62,6 +70,7 @@ class Card:
     def __repr__(self):
         return f"Card with {self.RANKS[self.rank]} of {self.SUITS[self.suit]}"
     
+    @assert_other
     def __eq__(self, other):
         if self.value == other.value:
             return True
@@ -100,6 +109,7 @@ class Stack_Base:
     def __repr__(self):
         return f"Stack with {self.stack}"
     
+    @assert_other
     def __eq__(self, other):
         if self.stack == other.stack:
             return True
@@ -191,6 +201,7 @@ class Pile:
     def __repr__(self):
         return f"Pile with {self.pile}"
     
+    @assert_other
     def __eq__(self, other):
         if self.highest == other.highest:
             return True
@@ -237,6 +248,7 @@ class FC:
     def __repr__(self):
         return f"Free Cells with {self.fcs}"
     
+    @assert_other
     def __eq__(self, other):
         if len(self.fcs) == len(other.fcs):
             if sorted([self.fcs[i] for i in range(len(self.fcs))]) == sorted([other.fcs[i] for i in range(len(other.fcs))]): # compare the sorted contents of the dicts 
@@ -289,6 +301,7 @@ class Board:
     def __repr__(self):
         return f"Board containing: \n {self.pile} \n {self.fcs} \n {self.stack}"
         
+    @assert_other
     def __eq__(self, other):
         if self.stack == other.stack:
             if self.pile == other.pile:
