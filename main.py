@@ -15,7 +15,7 @@ Created on Sun Nov 26 16:19:44 2023
 from termcolor import colored
 
 # WRAPPERS #
-def assert_length_1(func):
+def assert_list_length_1(func):
     def check_and_transform(self, item):
         ''' checks for input and transforms list into int '''
         assert type(item) == list, "card must be of type list"
@@ -26,6 +26,49 @@ def assert_length_1(func):
         output = func(self, item)
         return output
     return check_and_transform
+
+
+class Card:
+    ''' french playing cards 
+    value of Card is a tuple of two ints, 
+        the first corresponding to the suit, 
+        the second correponding to the rank of the card '''
+    
+    # CONFIGURATION VARIABLES #
+    SUITS = {0:'Hearts', 1:'Clubs', 3:'Diamonds', 4:'Spades'} 
+    RANKS = {0:'Ace', 1:'2', 2:'3', 3:'4', 4:'5', 5:'6', 6:'7', 7:'8', 8:'9', 9:'10', 10:'Jack', 11:'Dame', 12:'King'}
+    
+    # DECORATORS #
+    def assert_tuple(func):
+        def check_tuple(self, value):
+            ''' checks for value being a tuple of length two, 
+            values are ints, and must be part of keyword args of SUITS and RANKS '''
+            assert type(value) == tuple, "value must be a tuple"
+            assert len(value) == 2, "value must be of length 2"
+            assert (type(value[0]) == int and type(value[1]) == int), "items in value must be ints"
+            assert (value[0] in [*self.SUITS] and value[1] in [*self.RANKS]), "items in value are not in SUITS or RANKS"
+            output = func(self, value)
+            return output
+        return check_tuple
+            
+    # INIT #
+    @assert_tuple
+    def __init__(self, value: tuple):
+        self.value = value
+        self.suit = self.value[0]
+        self.rank = self.value[1]
+    
+    # MAGIC METHODS #
+    def __repr__(self):
+        return f"Card with {self.RANKS[self.rank]} of {self.SUITS[self.suit]}"
+    
+    def __eq__(self, other):
+        if self.value == other.value:
+            return True
+        return False
+    
+    # FUNCTIONS #
+    
 
 
 class Stack_Base:
@@ -154,7 +197,7 @@ class Pile:
         return False
         
     # FUNCTIONS #
-    @assert_length_1
+    @assert_list_length_1
     @update
     def discard(self, card: list) -> None:
         ''' puts a card on the discard pile if the card fits on the other 
@@ -207,7 +250,7 @@ class FC:
             fcs[i] = 0
         return fcs
     
-    @assert_length_1
+    @assert_list_length_1
     @update
     def put(self, card: list) -> None:
         ''' put a card into the Free Cell if there is space
@@ -253,5 +296,16 @@ class Board:
                     return True
         return False
         
+    # FUNCTIONS #
+    def move(self):
+        pass
     
-b = Board()
+    
+c = Card((0,0))
+d = Card((1,2))
+e = Card((1,2))
+print(c==d)
+print(d==e)
+print(c)
+
+
