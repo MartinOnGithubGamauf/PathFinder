@@ -153,7 +153,7 @@ class Stack_Base:
         card = stack[length-1] # get last card
         takable = 1
         for i in range(length-2, -1, -1): # loop from i=length-2 to i=0
-            if stack[i] != card - 1:
+            if not stack[i].card_fits_on_stack(card):
                 return takable
             takable += 1
         return takable
@@ -343,17 +343,5 @@ class Board:
         pass
     
 
-c = Card((0,1))
-d = Card((0,2))
-e = Card((2,3))
-f = Card((1,4))
-
-print(c.card_fits_on_pile(d))
-print(d.card_fits_on_pile(e))
-print(e.card_fits_on_pile(f))
-
-print(c.card_fits_on_stack(d))
-print(d.card_fits_on_stack(c))
-print(e.card_fits_on_stack(d))
-print(f.card_fits_on_stack(e))
+b = Board()
 
