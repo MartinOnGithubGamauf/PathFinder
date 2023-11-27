@@ -80,6 +80,26 @@ class Card:
             return True
         return False
     
+    @assert_other
+    def __lt__(self, other):
+        if self.suit < other.suit:
+            return True
+        elif self.suit == other.suit:
+            if self.rank < other.rank:
+                return True
+        else:
+            return False
+        
+    @assert_other
+    def __gt__(self, other):
+        if self.suit > other.suit:
+            return True
+        elif self.suit == other.suit:
+            if self.rank > other.rank:
+                return True
+        else:
+            return False
+    
     # FUNCTIONS #
     @assert_other
     def card_fits_on_stack(self, other):
@@ -279,7 +299,7 @@ class FC:
     @assert_other
     def __eq__(self, other):
         if len(self.fcs) == len(other.fcs):
-            if sorted([self.fcs[i] for i in range(len(self.fcs))]) == sorted([other.fcs[i] for i in range(len(other.fcs))]): # compare the sorted contents of the dicts 
+            if sorted([self.fcs[i] for i in range(len(self.fcs)) if isinstance(self.fcs[i], Card)]) == sorted([other.fcs[i] for i in range(len(other.fcs)) if isinstance(self.fcs[i], Card)]): # compare the sorted contents of the dicts 
                 return True
         return False
     
@@ -350,7 +370,17 @@ class Move:
     
     # INIT #
     def __init__(self):
-        pass
+        self.source = 0
+        self.sink = 0
+        self.success = True
+
+class Node:
+    
+    # INIT #
+    def __init__(self):
+        self.parent_node = 0
+        self.child_nodes = ()
+
 
 b = Board()
 d = Board()
