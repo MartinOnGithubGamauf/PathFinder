@@ -62,7 +62,7 @@ class Card:
             output = func(self, value)
             return output
         return check_tuple
-            
+    
     # INIT #
     @assert_tuple
     def __init__(self, value: tuple):
@@ -299,7 +299,9 @@ class FC:
     @assert_other
     def __eq__(self, other):
         if len(self.fcs) == len(other.fcs):
-            if sorted([self.fcs[i] for i in range(len(self.fcs)) if isinstance(self.fcs[i], Card)]) == sorted([other.fcs[i] for i in range(len(other.fcs)) if isinstance(self.fcs[i], Card)]): # compare the sorted contents of the dicts 
+            self_list = sorted([self.fcs[i] for i in range(len(self.fcs)) if isinstance(self.fcs[i], Card)])
+            other_list = sorted([other.fcs[i] for i in range(len(other.fcs)) if isinstance(other.fcs[i], Card)])
+            if self_list == other_list: # compare the sorted contents of the dicts 
                 return True
         return False
     
@@ -388,7 +390,18 @@ d = Board()
 print(b)
 print(d)
 
+d.fcs.put([Card((1,2))])
 
+print(d.fcs == b.fcs)
+
+b.fcs.put([Card((1,1))])
+b.fcs.put([Card((1,2))])
+
+print(d.fcs == b.fcs)
+
+b.fcs.get([Card((1,1))])
+
+print(d.fcs == b.fcs)
 
 
 
