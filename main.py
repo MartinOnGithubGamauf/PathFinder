@@ -24,7 +24,6 @@ def assert_list_length_1(func):
         assert len(item) == 1, "card must be a list of length 1"
         item = item[0]
         assert isinstance(item, Card), "content of list must be an int"
-        assert item > 0, "number in list must be greater than 1"
         output = func(self, item)
         return output
     return check_and_transform
@@ -254,13 +253,13 @@ class FC:
     0 represents an empty cell'''
     
     # CONFIGURATION VARIABLES #
-    AMOUNT = 5
+    AMOUNT = 10
     
     # DECORATORS #
     def update(func):
         def update_fcs(self, *args):
             print("")
-            print(colored("Free Cells:", "red") + " Executing function " + colored(func.__name__, 'cyan') + " with args " + colored(args, "cyan"))
+            print(colored("Free Cells:", "green") + " Executing function " + colored(func.__name__, 'cyan') + " with args " + colored(args, "cyan"))
             output = func(self, *args)
             print("Free Cells updated")
             print(self.fcs)
@@ -300,25 +299,28 @@ class FC:
         card has to be a list of length 1 '''
         fcs = self.fcs
         for i in range(self.AMOUNT):
-            if fcs[i] == 0:
+            if not isinstance(fcs[i], Card): # slot is 0
                 fcs[i] = card
                 return
         raise IndexError("Free Cells are full!")
-        
+    
+    @assert_list_length_1
     @update 
-    def get(self, card: int) -> list:
+    def get(self, card: list) -> list:
         ''' takes the desired card from the Free Cells
         returns the card number if successful
         returns empty list if the card could not be found '''
         fcs = self.fcs
         for i in range(self.AMOUNT):
-            if fcs[i] == card:
-                fcs[i] = 0
-                return [card]
+            if isinstance(fcs[i], Card):
+                if fcs[i] == card:
+                    fcs[i] = 0
+                    return [card]
         return []
     
 
 class Board:
+    ''' acts as Node or Knoten '''
     
     # INIT # 
     def __init__(self):
@@ -341,7 +343,23 @@ class Board:
     # FUNCTIONS #
     def move(self):
         pass
+
+
+class Move:
+    ''' acts as Edge or Kante '''
     
+    # INIT #
+    def __init__(self):
+        pass
 
 b = Board()
+d = Board()
+
+print(b)
+print(d)
+
+
+
+
+
 
