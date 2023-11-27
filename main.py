@@ -10,6 +10,8 @@ Created on Sun Nov 26 16:19:44 2023
 ### SETUP SMALL SCALE FREECELL BOARD
 #-> traceback, falls ein error ist, dass sich das board nicht verändert! (take from stack, but cant put on pile!, take from freecell but cant put on stack...)
 
+#-> implement + and - with Card - int, so one card higher or lower is possible
+
 ## Definition ungerichteten Graphs
 
 from termcolor import colored
@@ -17,11 +19,11 @@ from termcolor import colored
 # WRAPPERS #
 def assert_list_length_1(func):
     def check_and_transform(self, item):
-        ''' checks for input and transforms list into int '''
+        ''' checks for input and transforms list into singular card '''
         assert type(item) == list, "card must be of type list"
         assert len(item) == 1, "card must be a list of length 1"
         item = item[0]
-        assert type(item) == int, "content of list must be an int"
+        assert isinstance(item, Card), "content of list must be an int"
         assert item > 0, "number in list must be greater than 1"
         output = func(self, item)
         return output
@@ -36,6 +38,7 @@ def assert_other(func):
     return check_other
 
 
+
 class Card:
     ''' french playing cards 
     value of Card is a tuple of two ints, 
@@ -43,8 +46,10 @@ class Card:
         the second correponding to the rank of the card '''
     
     # CONFIGURATION VARIABLES #
-    SUITS = {0:'Hearts', 1:'Clubs', 3:'Diamonds', 4:'Spades'} 
+    SUITS = {0:'Hearts', 1:'Clubs', 2:'Diamonds', 3:'Spades'} 
     RANKS = {0:'Ace', 1:'2', 2:'3', 3:'4', 4:'5', 5:'6', 6:'7', 7:'8', 8:'9', 9:'10', 10:'Jack', 11:'Dame', 12:'King'}
+    RED = {0,2}
+    BLACK = {1,3}
     
     # DECORATORS #
     def assert_tuple(func):
@@ -54,7 +59,7 @@ class Card:
             assert type(value) == tuple, "value must be a tuple"
             assert len(value) == 2, "value must be of length 2"
             assert (type(value[0]) == int and type(value[1]) == int), "items in value must be ints"
-            assert (value[0] in [*self.SUITS] and value[1] in [*self.RANKS]), "items in value are not in SUITS or RANKS"
+            assert ((value[0] in [*self.SUITS]) and (value[1] in [*self.RANKS])), "items in value are not in SUITS or RANKS"
             output = func(self, value)
             return output
         return check_tuple
@@ -68,7 +73,7 @@ class Card:
     
     # MAGIC METHODS #
     def __repr__(self):
-        return f"Card with {self.RANKS[self.rank]} of {self.SUITS[self.suit]}"
+        return f"Card {self.RANKS[self.rank]} of {self.SUITS[self.suit]}"
     
     @assert_other
     def __eq__(self, other):
@@ -77,8 +82,29 @@ class Card:
         return False
     
     # FUNCTIONS #
+    @assert_other
+    def card_fits_on_stack(self, other):
+        ''' returns True if the Card 'other' fits on 'self', otherwise False '''
+        RED = self.RED
+        BLACK = self.BLACK
+        if (self.suit in RED and other.suit in RED) or (self.suit in BLACK and other.suit in BLACK):
+            if self.rank == other.rank + 1:
+                print(f"{other} fits on {self} in the stack.")
+                return True
+        print(f"{other} does not fit on {self} in the stack.")
+        return False
+            
     
-
+    @assert_other
+    def card_fits_on_pile(self, other):
+        ''' returns True if the Card 'other' fits on 'self', otherwise False '''
+        if self.suit == other.suit:
+            if self.rank == other.rank - 1:
+                print(f"{other} fits on {self} in the pile.")
+                return True
+        print(f"{other} does not fit on {self} in the pile.")
+        return False
+    
 
 class Stack_Base:
     
@@ -132,9 +158,10 @@ class Stack_Base:
             takable += 1
         return takable
     
-    @update        
-    def add(self, number: int) -> None:
-        self.stack.append(number)
+    @update
+    def add(self, card) -> None:
+        assert isinstance(card, Card), "input must be of type Card"
+        self.stack.append(card)
     
     @update
     def take(self, num_to_take: int) -> list:
@@ -164,7 +191,8 @@ class Stack(Stack_Base):
         # fills stack and shuffles it
         super().__init__()
         for i in range(self.STACK_SIZE):
-            self.add(i+1)
+            c = Card((0,i+1))
+            self.add(c)
         self.shuffle()
         
     # FUNCTIONS #
@@ -214,11 +242,12 @@ class Pile:
         ''' puts a card on the discard pile if the card fits on the other 
         card has to be a list of length 1 '''
         pile = self.pile
-        highest = self.highest
-        if card == highest + 1:
+        highest = self.highest        
+        top_card = pile[highest-1]
+        if top_card.card_fits_on_pile(card):
             pile.append(card)
         return
-
+    
 
 class FC:
     ''' Free Cells as a dictionary
@@ -313,12 +342,18 @@ class Board:
     def move(self):
         pass
     
-    
-c = Card((0,0))
-d = Card((1,2))
-e = Card((1,2))
-print(c==d)
-print(d==e)
-print(c)
 
+c = Card((0,1))
+d = Card((0,2))
+e = Card((2,3))
+f = Card((1,4))
+
+print(c.card_fits_on_pile(d))
+print(d.card_fits_on_pile(e))
+print(e.card_fits_on_pile(f))
+
+print(c.card_fits_on_stack(d))
+print(d.card_fits_on_stack(c))
+print(e.card_fits_on_stack(d))
+print(f.card_fits_on_stack(e))
 
