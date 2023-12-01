@@ -342,7 +342,7 @@ class FC:
     
 
 class Board:
-    ''' acts as Node or Knoten '''
+    ''' acts as Node/Vertex or Knoten '''
     
     # INIT # 
     def __init__(self):
@@ -376,12 +376,6 @@ class Move:
         self.sink = 0
         self.success = True
 
-class Node:
-    
-    # INIT #
-    def __init__(self):
-        self.parent_node = 0
-        self.child_nodes = ()
 
 
 b = Board()
