@@ -11,6 +11,8 @@ Created on Sun Nov 26 16:19:44 2023
 #-> traceback, falls ein error ist, dass sich das board nicht verändert! (take from stack, but cant put on pile!, take from freecell but cant put on stack...)
 
 #--> iterate to find all moves on the board
+#--> card_fits_on_xxx in Stack und Pile integrieren
+#--> last_card in Pile integrieren
 
 ## Definition ungerichteten Graphs
 
@@ -145,10 +147,12 @@ class Stack_Base:
             output = func(self, *args)
             self.length = len(self.stack)
             self.takable = self.get_takable()
+            self.last_card = self.get_last_card()
             print("Stack updated")
             print(self.stack)
             print(f"length: {self.length}")
             print(f"takable: {self.takable}")
+            print(f"last_card: {self.last_card}")
             print("")
             return output
             
@@ -159,6 +163,7 @@ class Stack_Base:
         self.stack = []
         self.length = len(self.stack)
         self.takable = self.get_takable()
+        self.last_card = None #! watch what happens
 
     # MAGIC METHODS #
     def __repr__(self):
@@ -186,6 +191,15 @@ class Stack_Base:
                 return takable
             takable += 1
         return takable
+    
+    def get_last_card(self):
+        ''' returns the last card on the stack
+        returns None, if there are no cards '''
+        if self.length == 0:
+            return None
+        else:
+            return self.stack[self.length-1]
+        
     
     @assert_list
     @update
@@ -290,7 +304,7 @@ class FC:
     0 represents an empty cell'''
     
     # CONFIGURATION VARIABLES #
-    AMOUNT = 1
+    AMOUNT = 2
     
     # DECORATORS #
     def update(func):
@@ -329,6 +343,16 @@ class FC:
             fcs[i] = 0
         return fcs
     
+    def can_put(self) -> bool:
+        ''' returns if I can put a card on the any of the fcs '''
+        fcs = self.fcs
+        for i in range(self.AMOUNT):
+            if not isinstance(fcs[i], Card): #slot is 0
+                print("Freecells are available")
+                return True
+        print("Freecells are not available")
+        return False
+    
     @assert_list_length_1
     @update
     def put(self, card: list) -> None:
@@ -362,6 +386,7 @@ class Board:
     ''' acts as Node/Vertex or Knoten '''
     
     STACK_SIZE = 2
+    FC_SIZE = FC.AMOUNT
     
     # INIT # 
     def __init__(self):
@@ -396,7 +421,7 @@ class Board:
         stack_number = len(self.stacks)
         i = 0
         for card in cards_to_deal:
-            self.stacks[i].stack.append(card)
+            self.stacks[i].populate([card])
             i = i + 1
             i = i % stack_number
     
@@ -405,23 +430,26 @@ class Board:
         output = []
         
         # iterate through every possible card on the stack and freecells
-        for i, stack in enumerate(self.stacks):
-            takable_list = stack.stack[stack.length-stack.takable : stack.length]
+        # only try to move one card at a time
+        for i, take_stack in enumerate(self.stacks):
             
-            for t, possible_card in enumerate(takable_list):
-                # try the move on another stack and FC
-                number_of_cards = len(takable_list) - t # cards to be moved
+            # check the other stacks
+            for j in range(Board.STACK_SIZE):
+                if i != j:
+                    put_stack = self.stacks[j]
+                    
+                    if put_stack.last_card.card_fits_on_stack(take_stack.last_card):
+                        
+                        output.append( Move( source = partial(take_stack.take, 1),
+                                              sink = partial(put_stack.add, [take_stack.last_card] ) ) )
+            
+            # check the freecells
+            if self.fcs.can_put():
                 
-                for j in range(Board.STACK_SIZE):
-                    if i != j:
-                        current_stack = self.stacks[j].stack
-                        last_card = current_stack[len(current_stack)-1]
-                        if last_card.card_fits_on_stack(possible_card):
-                            
-                            output.append( Move( source = partial(stack.take, number_of_cards), 
-                                                  sink = partial( current_stack.add,  ?) ) )
-                
-                
+                output.append( Move( source = partial(take_stack.take, 1),
+                                      sink = partial(self.fcs.put, [take_stack.last_card] ) ) )
+            
+        return output
     
     
     def move(self, move):
@@ -435,18 +463,27 @@ class Move:
     def __init__(self, source, sink):
         self.source = source # functool.partial to fetch card
         self.sink = sink # functool.partial to allocate card
+    
+    # MAGIC METHODS #
+    def __call__(self):    
+        self.source()
+        self.sink()
         
     # FUNCTIONS #
     def move(self):
-        self.source()
-        self.sink()
-
+        self()
+        
+    
     
 
 b = Board()
 
 print(b)
 
+m = b.get_all_moves()
 
+m[0]()
 
+n = b.get_all_moves()
 
+# --> remove cyclig moves?!
