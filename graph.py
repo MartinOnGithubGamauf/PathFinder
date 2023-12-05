@@ -81,24 +81,39 @@ class Graph:
         self.target = 0
         self.open = []
         self.closed = []'''
-        self.nodes_list = []
+        self.node_list = []
         
     # MAGIC METHODS #
     def __repr__(self):
-        return f"Graph with \n Nodes: {self.nodes_list} \n Edges: {[n.edge_list for n in self.nodes_list]}"
+        return f"Graph with \n Nodes: {self.node_list} \n Edges: {[n.edge_list for n in self.node_list]}"
         
     # FUNCTIONS #
     def add_node(self, node) -> None:
-        return self.nodes_list.append(node)
+        return self.node_list.append(node)
     
     def remove_node(self, number: int) -> None:
-        pass
+        for node in self.node_list:
+            if node.id == number:
+                edges = node.edge_list
+                for edge in edges:
+                    self.remove_edge(edge.id)
+                
+                self.node_list.remove(node)
+                print(f"Node {number} removed.")
+                
+            
     
     def add_edge(self, node1, node2):
         return node1.edge_list.append(Edge(node2)) and node2.edge_list.append(Edge(node1))
     
     def remove_edge(self, number: int) -> None:
-        pass
+        for node in self.node_list:
+            for edge in node.edge_list:
+                if edge.id == number:
+                    node.edge_list.remove(edge)
+                    print(f"Edge {number} removed.")
+                    
+    
 
 
 g = Graph()
@@ -120,6 +135,17 @@ g.add_edge(n2, n0)
 g.add_edge(n3, n1)
 
 print(g)
+
+g.remove_edge(1)
+g.remove_edge(5)
+
+print(g)
+
+g.remove_node(2)
+g.remove_node(4)
+
+print(g)
+
 
 
     
