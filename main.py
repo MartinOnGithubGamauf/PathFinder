@@ -429,7 +429,7 @@ class Board:
         from functools import partial
         output = []
         
-        # iterate through every possible card on the stack and freecells
+        # iterate through every possible card on the stack
         # only try to move one card at a time
         for i, take_stack in enumerate(self.stacks):
             
@@ -448,6 +448,13 @@ class Board:
                 
                 output.append( Move( source = partial(take_stack.take, 1),
                                       sink = partial(self.fcs.put, [take_stack.last_card] ) ) )
+            
+            # check the pile
+            
+        
+        # iterate through every card on the freecells
+            
+            
             
         return output
     
