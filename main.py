@@ -10,20 +10,30 @@ Created on Sun Nov 26 16:19:44 2023
 ### SETUP SMALL SCALE FREECELL BOARD
 #-> traceback, falls ein error ist, dass sich das board nicht verändert! (take from stack, but cant put on pile!, take from freecell but cant put on stack...)
 
-#-> implement + and - with Card - int, so one card higher or lower is possible
+#--> iterate to find all moves on the board
 
 ## Definition ungerichteten Graphs
 
 from termcolor import colored
 
 # WRAPPERS #
+def assert_list(func):
+    def check_list(self, cards):
+        ''' checks input to be list of cards '''
+        assert type(cards) == list, "cards must be of type list"
+        assert len(cards) > 0, "cards must not be empty"
+        assert all([isinstance(card, Card) for card in cards]), "content of list must be a Card"
+        output = func(self, cards)
+        return output
+    return check_list
+
 def assert_list_length_1(func):
     def check_and_transform(self, item):
-        ''' checks for input and transforms list into singular card '''
+        ''' checks input to be list and transforms list into singular card '''
         assert type(item) == list, "card must be of type list"
         assert len(item) == 1, "card must be a list of length 1"
         item = item[0]
-        assert isinstance(item, Card), "content of list must be an int"
+        assert isinstance(item, Card), "content of list must be a Card"
         output = func(self, item)
         return output
     return check_and_transform
@@ -177,10 +187,20 @@ class Stack_Base:
             takable += 1
         return takable
     
+    @assert_list
     @update
-    def add(self, card) -> None:
-        assert isinstance(card, Card), "input must be of type Card"
-        self.stack.append(card)
+    def populate(self, cards: list) -> None:
+        for card in cards:
+            self.stack.append(card)
+    
+    @assert_list
+    @update
+    def add(self, cards: list) -> None:
+        bottom_card_stack = self.stack[self.length-1]
+        top_card_to_add = cards[0]
+        if bottom_card_stack.card_fits_on_stack(top_card_to_add):
+            for card in cards:
+                self.stack.append(card)
     
     @update
     def take(self, num_to_take: int) -> list:
@@ -211,7 +231,7 @@ class Stack(Stack_Base):
         super().__init__()
         for i in range(self.STACK_SIZE):
             c = Card((0,i+1))
-            self.add(c)
+            self.populate([c])
         self.shuffle()
         
     # FUNCTIONS #
@@ -254,7 +274,7 @@ class Pile:
             return True
         return False
         
-    # FUNCTIONS #
+    # FUNCTIONS #    
     @assert_list_length_1
     @update
     def discard(self, card: list) -> None:
@@ -330,7 +350,7 @@ class FC:
     @update 
     def get(self, card: list) -> list:
         ''' takes the desired card from the Free Cells
-        returns the card number if successful
+        returns the card in a list if successful
         returns empty list if the card could not be found '''
         fcs = self.fcs
         for i in range(self.AMOUNT):
