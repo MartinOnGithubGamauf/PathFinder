@@ -220,19 +220,16 @@ class Stack_Base:
         
     
 class Stack(Stack_Base):
-    ''' defines a Stack with cards from 1 to STACK_SIZE '''
+    ''' DEPRECATED: defines a Stack with cards from 1 to STACK_SIZE '''
     
     # CONFIGURATION VARIABLES #
-    STACK_SIZE = 10
+
     
     # INIT #
     def __init__(self):
-        # fills stack and shuffles it
+        # init the Stack without any cards
         super().__init__()
-        for i in range(self.STACK_SIZE):
-            c = Card((0,i+1))
-            self.populate([c])
-        self.shuffle()
+        
         
     # FUNCTIONS #
     @Stack_Base.update
@@ -293,7 +290,7 @@ class FC:
     0 represents an empty cell'''
     
     # CONFIGURATION VARIABLES #
-    AMOUNT = 10
+    AMOUNT = 1
     
     # DECORATORS #
     def update(func):
@@ -366,13 +363,15 @@ class Board:
     
     # INIT # 
     def __init__(self):
-        self.stack = Stack()
+        self.stacks = [Stack(), Stack()]
         self.pile = Pile()
         self.fcs = FC()
+        
+        self.deal_cards()
     
     # MAGIC METHODS #
     def __repr__(self):
-        return f"Board containing: \n {self.pile} \n {self.fcs} \n {self.stack}"
+        return f"Board containing: \n {self.pile} \n {self.fcs} \n {[stack for stack in self.stacks]}"
         
     @assert_other
     def __eq__(self, other):
@@ -383,6 +382,22 @@ class Board:
         return False
         
     # FUNCTIONS #
+    def deal_cards(self) -> None:
+        # generate cards
+        cards_to_deal = [Card((0,i)) for i in range(5)] #len(Card.RANKS)
+        
+        # shuffle the cards and deal to the stacks
+        from random import shuffle
+        shuffle(cards_to_deal)
+        
+        # deal cards uniformly to stacks
+        stack_number = len(self.stacks)
+        i = 0
+        for card in cards_to_deal:
+            self.stacks[i].stack.append(card)
+            i = i + 1
+            i = i % stack_number
+    
     def move(self):
         pass
 
@@ -404,12 +419,12 @@ d = Board()
 print(b)
 print(d)
 
-d.fcs.put([Card((1,2))])
+d.fcs.put([Card((1,1))])
 
 print(d.fcs == b.fcs)
 
 b.fcs.put([Card((1,1))])
-b.fcs.put([Card((1,2))])
+#b.fcs.put([Card((1,2))])
 
 print(d.fcs == b.fcs)
 
