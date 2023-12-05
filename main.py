@@ -361,9 +361,11 @@ class FC:
 class Board:
     ''' acts as Node/Vertex or Knoten '''
     
+    STACK_SIZE = 2
+    
     # INIT # 
     def __init__(self):
-        self.stacks = [Stack(), Stack()]
+        self.stacks = [Stack() for i in range(Board.STACK_SIZE)]
         self.pile = Pile()
         self.fcs = FC()
         
@@ -398,39 +400,52 @@ class Board:
             i = i + 1
             i = i % stack_number
     
-    def move(self):
-        pass
-
+    def get_all_moves(self) -> list:
+        from functools import partial
+        output = []
+        
+        # iterate through every possible card on the stack and freecells
+        for i, stack in enumerate(self.stacks):
+            takable_list = stack.stack[stack.length-stack.takable : stack.length]
+            
+            for t, possible_card in enumerate(takable_list):
+                # try the move on another stack and FC
+                number_of_cards = len(takable_list) - t # cards to be moved
+                
+                for j in range(Board.STACK_SIZE):
+                    if i != j:
+                        current_stack = self.stacks[j].stack
+                        last_card = current_stack[len(current_stack)-1]
+                        if last_card.card_fits_on_stack(possible_card):
+                            
+                            output.append( Move( source = partial(stack.take, number_of_cards), 
+                                                  sink = partial( current_stack.add,  ?) ) )
+                
+                
+    
+    
+    def move(self, move):
+        ''' execute the move in question '''
+        move.move()
 
 class Move:
     ''' acts as Edge or Kante '''
     
     # INIT #
-    def __init__(self):
-        self.source = 0
-        self.sink = 0
-        self.success = True
+    def __init__(self, source, sink):
+        self.source = source # functool.partial to fetch card
+        self.sink = sink # functool.partial to allocate card
+        
+    # FUNCTIONS #
+    def move(self):
+        self.source()
+        self.sink()
 
-
+    
 
 b = Board()
-d = Board()
 
 print(b)
-print(d)
-
-d.fcs.put([Card((1,1))])
-
-print(d.fcs == b.fcs)
-
-b.fcs.put([Card((1,1))])
-#b.fcs.put([Card((1,2))])
-
-print(d.fcs == b.fcs)
-
-b.fcs.get([Card((1,1))])
-
-print(d.fcs == b.fcs)
 
 
 
