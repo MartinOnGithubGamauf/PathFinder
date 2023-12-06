@@ -10,9 +10,7 @@ Created on Sun Nov 26 16:19:44 2023
 ### SETUP SMALL SCALE FREECELL BOARD
 #-> traceback, falls ein error ist, dass sich das board nicht verändert! (take from stack, but cant put on pile!, take from freecell but cant put on stack...)
 
-#--> iterate to find all moves on the board
-#--> card_fits_on_xxx in Stack und Pile integrieren
-#--> last_card in Pile integrieren
+#--> implement assembly of Graph
 
 ## Definition ungerichteten Graphs
 
@@ -526,6 +524,20 @@ class Board:
         ''' execute the move in question '''
         move.move()
 
+class Solution_Board(Board):
+    STACK_SIZE = 2
+    FC_SIZE = FC.AMOUNT
+    
+    # INIT # 
+    def __init__(self):
+        self.stacks = [Stack() for i in range(Board.STACK_SIZE)]
+        self.pile = Pile()
+        self.fcs = FC()
+        
+        cards_to_deal = [Card((0,i)) for i in range(5)]
+        for card in cards_to_deal:
+            self.pile.discard([card])
+
 class Move:
     ''' acts as Edge or Kante '''
     
@@ -545,24 +557,6 @@ class Move:
         
 
 b = Board()
+s = Solution_Board()
 
-print(b)
-
-m = b.get_all_moves()
-
-m[0]()
-
-print(b)
-
-n = b.get_all_moves()
-
-n[0]()
-
-print(b)
-
-o = b.get_all_moves()
-
-o[0]()
-
-print(b)
 # --> remove cyclig moves?!

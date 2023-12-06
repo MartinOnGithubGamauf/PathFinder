@@ -181,7 +181,12 @@ class Graph:
                 
             
                         
-            
+from main import Card, Stack, Pile, FC, Board, Solution_Board, Move
+
+
+
+b = Board()
+
             
 
 
