@@ -207,6 +207,18 @@ class Stack_Base:
         for card in cards:
             self.stack.append(card)
     
+    @assert_list_length_1
+    def can_add(self, card: list) -> bool:
+        ''' returns if card can be put on the stack '''
+        bottom_card_stack = self.stack[self.length-1]
+        if bottom_card_stack.card_fits_on_stack(card):
+            print("Card fits on Stack.")
+            return True
+        else:
+            print("Card does not fit on Stack.")
+            return False
+        
+    
     @assert_list
     @update
     def add(self, cards: list) -> None:
@@ -261,7 +273,7 @@ class Pile:
             print("")
             print(colored("Pile:", "magenta") + " Executing function " + colored(func.__name__, 'cyan') + " with args " + colored(args, "cyan"))
             output = func(self, *args)
-            self.highest = len(self.pile)
+            self.highest = self.set_highest()
             print("Pile updated")
             print(self.pile)
             print(f"highest: {self.highest}")
@@ -273,7 +285,7 @@ class Pile:
     # INIT #
     def __init__(self):
         self.pile = []
-        self.highest = len(self.pile)
+        self.highest = None
         
     # MAGIC METHODS #
     def __repr__(self):
@@ -285,7 +297,28 @@ class Pile:
             return True
         return False
         
-    # FUNCTIONS #    
+    # FUNCTIONS #
+    def get_highest(self):
+        ''' returns the highest card on the pile
+        returns None, if there are no cards '''
+        if len(self.pile) == 0:
+            return None
+        else:
+            return self.pile[len(self.pile)-1]
+    
+    @assert_list_length_1
+    def can_discard(self, card: list) -> None:
+        ''' returns if the card can be put on the pile '''
+        if not self.highest: # highest == None 
+            print("Card fits on Pile.")
+            return True
+        elif self.highest.card_fits_on_pile(card):
+            print("Card fits on Pile.")
+            return True
+        else:
+            print("Card does not fit on Pile.")
+            return False
+        
     @assert_list_length_1
     @update
     def discard(self, card: list) -> None:
@@ -344,13 +377,13 @@ class FC:
         return fcs
     
     def can_put(self) -> bool:
-        ''' returns if I can put a card on the any of the fcs '''
+        ''' returns if I can put a card on any of the fcs '''
         fcs = self.fcs
         for i in range(self.AMOUNT):
             if not isinstance(fcs[i], Card): #slot is 0
-                print("Freecells are available")
+                print("Freecells are available.")
                 return True
-        print("Freecells are not available")
+        print("Freecells are not available.")
         return False
     
     @assert_list_length_1
@@ -426,6 +459,8 @@ class Board:
             i = i % stack_number
     
     def get_all_moves(self) -> list:
+        print("\nGetting all moves:")
+        
         from functools import partial
         output = []
         
@@ -438,22 +473,36 @@ class Board:
                 if i != j:
                     put_stack = self.stacks[j]
                     
-                    if put_stack.last_card.card_fits_on_stack(take_stack.last_card):
+                    if put_stack.can_add([take_stack.last_card]):
                         
                         output.append( Move( source = partial(take_stack.take, 1),
-                                              sink = partial(put_stack.add, [take_stack.last_card] ) ) )
+                                              sink = partial(put_stack.add, [take_stack.last_card]) ) )
             
             # check the freecells
             if self.fcs.can_put():
                 
                 output.append( Move( source = partial(take_stack.take, 1),
-                                      sink = partial(self.fcs.put, [take_stack.last_card] ) ) )
+                                      sink = partial(self.fcs.put, [take_stack.last_card]) ) )
             
             # check the pile
-            
-        
+            if self.pile.can_discard([take_stack.last_card]):
+                
+                output.append( Move( source = partial(take_stack.take, 1),
+                                      sink = partial(self.pile.discard, [take_stack.last_card]) ) )
+                
+                
         # iterate through every card on the freecells
+        fcs_dict = self.fcs.fcs
+        for key in fcs_dict:
+            card = fcs_dict[key]
             
+            # check that card is not None
+            if isinstance(card, Card):
+                for put_stack in self.stacks:
+                    if put_stack.can_add([card]):
+                        
+                        output.append( Move( source = partial(self.fcs.get, [card]),
+                                              sink = partial(put_stack.add, [card]) ) )
             
             
         return output
