@@ -273,7 +273,7 @@ class Pile:
             print("")
             print(colored("Pile:", "magenta") + " Executing function " + colored(func.__name__, 'cyan') + " with args " + colored(args, "cyan"))
             output = func(self, *args)
-            self.highest = self.set_highest()
+            self.highest = self.get_highest()
             print("Pile updated")
             print(self.pile)
             print(f"highest: {self.highest}")
@@ -310,8 +310,9 @@ class Pile:
     def can_discard(self, card: list) -> None:
         ''' returns if the card can be put on the pile '''
         if not self.highest: # highest == None 
-            print("Card fits on Pile.")
-            return True
+            if card.rank == 0:
+                print("Card fits on Pile.")
+                return True
         elif self.highest.card_fits_on_pile(card):
             print("Card fits on Pile.")
             return True
@@ -325,9 +326,11 @@ class Pile:
         ''' puts a card on the discard pile if the card fits on the other 
         card has to be a list of length 1 '''
         pile = self.pile
-        highest = self.highest        
-        top_card = pile[highest-1]
-        if top_card.card_fits_on_pile(card):
+        highest = self.highest     
+        if not highest: # highest == None 
+            if card.rank == 0:
+                pile.append(card)
+        elif highest.card_fits_on_pile(card):
             pile.append(card)
         return
     
@@ -447,8 +450,9 @@ class Board:
         cards_to_deal = [Card((0,i)) for i in range(5)] #len(Card.RANKS)
         
         # shuffle the cards and deal to the stacks
-        from random import shuffle
-        shuffle(cards_to_deal)
+        #from random import shuffle
+        import random
+        random.Random(5).shuffle(cards_to_deal)
         
         # deal cards uniformly to stacks
         stack_number = len(self.stacks)
@@ -490,7 +494,6 @@ class Board:
                 output.append( Move( source = partial(take_stack.take, 1),
                                       sink = partial(self.pile.discard, [take_stack.last_card]) ) )
                 
-                
         # iterate through every card on the freecells
         fcs_dict = self.fcs.fcs
         for key in fcs_dict:
@@ -498,13 +501,17 @@ class Board:
             
             # check that card is not None
             if isinstance(card, Card):
+                # check the stacks
                 for put_stack in self.stacks:
                     if put_stack.can_add([card]):
                         
                         output.append( Move( source = partial(self.fcs.get, [card]),
                                               sink = partial(put_stack.add, [card]) ) )
             
+                # check the freecells?
+                
             
+        print(f"Found {colored(str(len(output)), 'magenta')} moves.")
         return output
     
     
@@ -529,8 +536,6 @@ class Move:
     def move(self):
         self()
         
-    
-    
 
 b = Board()
 
@@ -540,6 +545,17 @@ m = b.get_all_moves()
 
 m[0]()
 
+print(b)
+
 n = b.get_all_moves()
 
+n[0]()
+
+print(b)
+
+o = b.get_all_moves()
+
+o[0]()
+
+print(b)
 # --> remove cyclig moves?!
