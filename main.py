@@ -222,6 +222,10 @@ class Stack_Base:
     @assert_list
     @update
     def add(self, cards: list) -> None:
+        if self.length == 0:
+            for card in cards:
+                self.stack.append(card)
+            return
         bottom_card_stack = self.stack[self.length-1]
         top_card_to_add = cards[0]
         if bottom_card_stack.card_fits_on_stack(top_card_to_add):
@@ -508,9 +512,12 @@ class Board:
                         output.append( Move( source = partial(self.fcs.get, [card]),
                                               sink = partial(put_stack.add, [card]) ) )
             
-                # check the freecells?
+                # check the freecells
+                if self.pile.can_discard([card]):
+                    
+                    output.append( Move (source = partial(self.fcs.get, [card]),
+                                          sink = partial(self.pile.discard, [card]) ) )
                 
-            
         print(f"Found {colored(str(len(output)), 'magenta')} moves.")
         return output
     
