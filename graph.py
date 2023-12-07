@@ -28,10 +28,10 @@ def assert_edge(func):
     return check_edge
 
 def assert_node(func):
-    def check_node(self, node, weight):
+    def check_node(self, node, move, weight):
         ''' checks if node is the of type Node '''
         assert isinstance(node, Node)
-        output = func(self, node, weight)
+        output = func(self, node, move, weight)
         return output
     return check_node
 
@@ -45,7 +45,7 @@ class Edge:
     def __init__(self, destination_node, move, weight: int=1):
         self.id = 0
         self.destination = destination_node
-        self.move
+        self.move = move
         self.weight = weight
     
         self.id = Edge.COUNTID
@@ -113,8 +113,8 @@ class Graph:
                 
             
     
-    def add_edge(self, node1, node2, weight: int):
-        return node1.edge_list.append(Edge(node2, weight)) # node2.edge_list.append(Edge(node1, weight))
+    def add_edge(self, node1, node2, move, weight: int=1):
+        return node1.edge_list.append(Edge(node2, move, weight)) # node2.edge_list.append(Edge(node1, weight))
     
     def remove_edge(self, number: int) -> None:
         for node in self.node_list:
@@ -160,9 +160,9 @@ class Graph:
         next_node = root
         
         #while not target_found:
-        for i in range(4): # go 4 levels deep
+        for i in range(1): # go 4 levels deep
             
-            moves = next_node.get_all_moves()
+            moves = next_node.board.get_all_moves()
             
             for move in moves:
                 # see where the move takes you, check through all nodes in graph to detect cycles
@@ -175,9 +175,9 @@ class Graph:
                         add_it = False
                 if add_it:
                     self.add_node(new_node)
-                self.add_edge(next_node, new_node, 1)
+                self.add_edge(next_node, new_node, move)
                 
-        
+            
         
         
         
