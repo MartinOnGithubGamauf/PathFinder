@@ -440,10 +440,11 @@ class Board:
         
     @assert_other
     def __eq__(self, other):
-        if self.stack == other.stack:
-            if self.pile == other.pile:
-                if self.fcs == other.fcs:
-                    return True
+        if len(self.stacks) == len(other.stacks):
+            if all([self.stacks[i] == other.stacks[i] for i in range(len(self.stacks))]):
+                if self.pile == other.pile:
+                    if self.fcs == other.fcs:
+                        return True
         return False
         
     # FUNCTIONS #
@@ -483,7 +484,7 @@ class Board:
                         
                         copy = self.copy() # copy the board for every move appended
                         
-                        output.append( Move( source = partial(copy.stacks[i].take, 1), # take_stack
+                        output.append( Move( board = copy, source = partial(copy.stacks[i].take, 1), # take_stack
                                               sink = partial(copy.stacks[j].add, [take_stack.last_card]) ) ) # put_stack
             
             # check the freecells
@@ -491,7 +492,7 @@ class Board:
                 
                 copy = self.copy()
                 
-                output.append( Move( source = partial(copy.stacks[i].take, 1),
+                output.append( Move( board = copy, source = partial(copy.stacks[i].take, 1),
                                       sink = partial(copy.fcs.put, [take_stack.last_card]) ) )
             
             # check the pile
@@ -499,7 +500,7 @@ class Board:
                 
                 copy = self.copy()
                 
-                output.append( Move( source = partial(copy.stacks[i].take, 1),
+                output.append( Move( board = copy, source = partial(copy.stacks[i].take, 1),
                                       sink = partial(copy.pile.discard, [take_stack.last_card]) ) )
                 
         # iterate through every card on the freecells
@@ -515,7 +516,7 @@ class Board:
                         
                         copy = self.copy()
                         
-                        output.append( Move( source = partial(copy.fcs.get, [card]),
+                        output.append( Move( board = copy, source = partial(copy.fcs.get, [card]),
                                               sink = partial(copy.stacks[j].add, [card]) ) )
             
                 # check the freecells
@@ -523,7 +524,7 @@ class Board:
                     
                     copy = self.copy()
                     
-                    output.append( Move (source = partial(copy.fcs.get, [card]),
+                    output.append( Move ( board = copy, source = partial(copy.fcs.get, [card]),
                                           sink = partial(copy.pile.discard, [card]) ) )
                 
         print(f"Found {colored(str(len(output)), 'magenta')} moves.")
