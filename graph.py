@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Created on Fri Dec  1 21:57:25 2023
+Created on Thu Dec  7 16:23:11 2023
 
 @author: Martin
 """
@@ -10,6 +10,11 @@ Created on Fri Dec  1 21:57:25 2023
 
 ''' implement A* algorithm, follow example from https://de.wikipedia.org/wiki/A*-Algorithmus '''
 
+
+# for implementation with Board and Moves, we need
+#   - function to determine h-value for each board: The h-value should be the minimum amount of moves it takes to finish the game 
+#            -> (needs to know the target node!)
+#   - cycle detection
 
 from termcolor import colored
 
@@ -37,9 +42,10 @@ class Edge:
     
     # INIT #
     @assert_node
-    def __init__(self, destination_node, weight: int):
+    def __init__(self, destination_node, move, weight: int=1):
         self.id = 0
         self.destination = destination_node
+        self.move
         self.weight = weight
     
         self.id = Edge.COUNTID
@@ -54,29 +60,26 @@ class Node: # or Vertex
     COUNTID = 0
 
     # INIT #
-    def __init__(self, name: str, h: int):
+    def __init__(self, board, h: int=1):
         self.id = 0
-        self.name = name
+        self.board = board
         self.edge_list = []
         self.f = 0 # f value, guesses the length of path to target
         self.g = 0 # g value, gives the number of nodes from root node
         self.h = h # h value, guessed cost from current node to target
-        self.predecessor = 0
+        self.predecessor = None
         
         self.id = Node.COUNTID
         Node.COUNTID = Node.COUNTID + 1
         
     # MAGIC METHODS #
     def __repr__(self):
-         return f"Node {self.id} - {colored(self.name, 'cyan')}"
+         return f"Node {self.id} - {colored(self.id, 'cyan')}"
      
     # FUNCTIONS #
     def calculate_f(self):
         self.f = self.g + self.h
-    
-    def add_edge(self, edge):
-        pass
-    
+        
         
 class Graph:
     ''' Directed graph '''
@@ -85,8 +88,8 @@ class Graph:
     def __init__(self):
         self.node_list = []
         
-        self.root = 0 # id of node to start with
-        self.target = 0 # id of node to stop
+        self.root = None # id of node to start with
+        self.target = None # id of node to stop
         self.open = []
         self.closed = []
         
@@ -119,6 +122,68 @@ class Graph:
                 if edge.id == number:
                     node.edge_list.remove(edge)
                     print(f"Edge {number} removed.")
+                        
+    def calculate_h(self, node) -> None:
+        ''' change the h value of the given node using self.target '''
+        
+        ''' if card is on pile: 0 points
+            if card is on fcs: 1 point
+            if card is on stack: 
+                unordered: 2 points
+                ordered: 1 point '''
+        h = 0
+        #pile = node.board.pile
+        fcs = node.board.fcs
+        stacks = node.board.stacks
+        # dont add anything for the pile
+        for key in fcs.fcs:
+            if fcs.fcs[key]: # if there is a card
+                h += 1
+        for stack in stacks:
+            ordered = stack.takable
+            unordered = len(stack.takable) - ordered
+            h += ordered
+            h += 2*unordered
+        
+    def assemble(self) -> None:
+        ''' Starting with root, explore the board and add corresponding edges on the go.
+        Use A* to determine which node to explore next.
+        Stop at the first time the target node is reached. '''
+        
+        target = self.target
+        root = self.root
+        
+        # while there is no edge to the root node, explore
+        
+        target_found = False
+        
+        next_node = root
+        
+        #while not target_found:
+        for i in range(4): # go 4 levels deep
+            
+            moves = next_node.get_all_moves()
+            
+            for move in moves:
+                # see where the move takes you, check through all nodes in graph to detect cycles
+                new_node = Node(board=move())
+                
+                # do not add node if the board is already in node_list
+                add_it = True
+                for node in self.node_list:
+                    if node.board == new_node.board:
+                        add_it = False
+                if add_it:
+                    self.add_node(new_node)
+                self.add_edge(next_node, new_node, 1)
+                
+        
+        
+        
+        
+        
+        
+        
                     
     def solve(self):
         
@@ -181,42 +246,30 @@ class Graph:
                 
             
                         
-            
-            
+from main import Card, Stack, Pile, FC, Board, Solution_Board, Move
 
+print(f"\n{colored('||| ----- GENERATION OF BOARDS ----- |||', 'grey', 'on_green')}\n")
+
+sb = Solution_Board()
+print(sb)
+b = Board()
+print(b)
+
+target = Node(board=sb)
+root = Node(board=b)
+
+print(f"\n{colored('||| ----- GENERATION OF GRAPH ----- |||', 'grey', 'on_green')}\n")
 
 g = Graph()
 
-n0 = Node(name="Saarbrücken", h=222)
-n1 = Node(name="Kaiserslautern", h=158)
-n2 = Node(name="Frankfurt", h=96)
-n3 = Node(name="Ludwigshafen", h=108)
-n4 = Node(name="Karlsruhe", h=140)
-n5 = Node(name="Würzburg", h=0)
-n6 = Node(name="Heilbronn", h=87)
+g.add_node(target)
+g.add_node(root)
 
-g.add_node(n0)
-g.add_node(n1)
-g.add_node(n2)
-g.add_node(n3)
-g.add_node(n4)
-g.add_node(n5)
-g.add_node(n6)
+g.target = target # node
+g.root = root # node
 
-g.add_edge(n0, n1, 70)
-g.add_edge(n0, n4, 145)
-g.add_edge(n1, n2, 103)
-g.add_edge(n1, n3, 53)
-g.add_edge(n2, n5, 116)
-g.add_edge(n3, n5, 183)
-g.add_edge(n4, n6, 84)
-g.add_edge(n5, n5, 102)
+g.assemble()
 
 print(g)
 
-g.root = 0 # Saarbrücken
-g.target = 5 # Würzburg
-
-g.solve()
-
-    
+#g.solve()
