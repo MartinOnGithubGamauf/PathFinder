@@ -481,20 +481,26 @@ class Board:
                     
                     if put_stack.can_add([take_stack.last_card]):
                         
-                        output.append( Move( source = partial(take_stack.take, 1),
-                                              sink = partial(put_stack.add, [take_stack.last_card]) ) )
+                        copy = self.copy() # copy the board for every move appended
+                        
+                        output.append( Move( source = partial(copy.stacks[i].take, 1), # take_stack
+                                              sink = partial(copy.stacks[j].add, [take_stack.last_card]) ) ) # put_stack
             
             # check the freecells
             if self.fcs.can_put():
                 
-                output.append( Move( source = partial(take_stack.take, 1),
-                                      sink = partial(self.fcs.put, [take_stack.last_card]) ) )
+                copy = self.copy()
+                
+                output.append( Move( source = partial(copy.stacks[i].take, 1),
+                                      sink = partial(copy.fcs.put, [take_stack.last_card]) ) )
             
             # check the pile
             if self.pile.can_discard([take_stack.last_card]):
                 
-                output.append( Move( source = partial(take_stack.take, 1),
-                                      sink = partial(self.pile.discard, [take_stack.last_card]) ) )
+                copy = self.copy()
+                
+                output.append( Move( source = partial(copy.stacks[i].take, 1),
+                                      sink = partial(copy.pile.discard, [take_stack.last_card]) ) )
                 
         # iterate through every card on the freecells
         fcs_dict = self.fcs.fcs
@@ -507,14 +513,18 @@ class Board:
                 for put_stack in self.stacks:
                     if put_stack.can_add([card]):
                         
-                        output.append( Move( source = partial(self.fcs.get, [card]),
-                                              sink = partial(put_stack.add, [card]) ) )
+                        copy = self.copy()
+                        
+                        output.append( Move( source = partial(copy.fcs.get, [card]),
+                                              sink = partial(copy.stacks[j].add, [card]) ) )
             
                 # check the freecells
                 if self.pile.can_discard([card]):
                     
-                    output.append( Move (source = partial(self.fcs.get, [card]),
-                                          sink = partial(self.pile.discard, [card]) ) )
+                    copy = self.copy()
+                    
+                    output.append( Move (source = partial(copy.fcs.get, [card]),
+                                          sink = partial(copy.pile.discard, [card]) ) )
                 
         print(f"Found {colored(str(len(output)), 'magenta')} moves.")
         return output
@@ -523,6 +533,12 @@ class Board:
     def move(self, move):
         ''' execute the move in question '''
         move.move()
+        
+    def copy(self):
+        ''' return deepcopy of self '''
+        from copy import deepcopy
+        return deepcopy(self)
+        
 
 class Solution_Board(Board):
     STACK_SIZE = 2
@@ -542,7 +558,8 @@ class Move:
     ''' acts as Edge or Kante '''
     
     # INIT #
-    def __init__(self, source, sink):
+    def __init__(self, board, source, sink):
+        self.board = board
         self.source = source # functool.partial to fetch card
         self.sink = sink # functool.partial to allocate card
     
@@ -550,6 +567,7 @@ class Move:
     def __call__(self):    
         self.source()
         self.sink()
+        return self.board
         
     # FUNCTIONS #
     def move(self):
@@ -560,3 +578,4 @@ if __name__=="__main__":
     s = Solution_Board()
     
     # --> remove cyclig moves?!
+    
