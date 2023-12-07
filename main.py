@@ -41,7 +41,7 @@ def assert_list_length_1(func):
 def assert_other(func):
     def check_other(self, other):
         ''' checks if other is the same class as self '''
-        assert isinstance(self, type(other))
+        assert isinstance(self, type(other)), f"{type(self)} and {type(other)}"
         output = func(self, other)
         return output
     return check_other
@@ -208,7 +208,10 @@ class Stack_Base:
     @assert_list_length_1
     def can_add(self, card: list) -> bool:
         ''' returns if card can be put on the stack '''
-        bottom_card_stack = self.stack[self.length-1]
+        bottom_card_stack = self.last_card
+        if not self.last_card: # if last_card is None
+            print("Card fits on Stack.")
+            return True
         if bottom_card_stack.card_fits_on_stack(card):
             print("Card fits on Stack.")
             return True
@@ -295,8 +298,10 @@ class Pile:
     
     @assert_other
     def __eq__(self, other):
-        if self.highest == other.highest:
-            return True
+        # check if .highest is same type for self and other
+        if isinstance(self.highest, type(other.highest)):
+            if self.highest == other.highest:
+                return True
         return False
         
     # FUNCTIONS #
@@ -474,34 +479,38 @@ class Board:
         # iterate through every possible card on the stack
         # only try to move one card at a time
         for i, take_stack in enumerate(self.stacks):
+            card = take_stack.last_card
             
-            # check the other stacks
-            for j in range(Board.STACK_SIZE):
-                if i != j:
-                    put_stack = self.stacks[j]
+            # only check this if there is a card on the stack
+            if isinstance(card, Card):
+                
+                # check the other stacks
+                for j in range(Board.STACK_SIZE):
+                    if i != j:
+                        put_stack = self.stacks[j]
+                        
+                        if put_stack.can_add([card]):
+                            
+                            copy = self.copy() # copy the board for every move appended
+                            
+                            output.append( Move( board = copy, source = partial(copy.stacks[i].take, 1), # take_stack
+                                                  sink = partial(copy.stacks[j].add, [card]) ) ) # put_stack
+                
+                # check the freecells
+                if self.fcs.can_put():
                     
-                    if put_stack.can_add([take_stack.last_card]):
-                        
-                        copy = self.copy() # copy the board for every move appended
-                        
-                        output.append( Move( board = copy, source = partial(copy.stacks[i].take, 1), # take_stack
-                                              sink = partial(copy.stacks[j].add, [take_stack.last_card]) ) ) # put_stack
-            
-            # check the freecells
-            if self.fcs.can_put():
+                    copy = self.copy()
+                    
+                    output.append( Move( board = copy, source = partial(copy.stacks[i].take, 1),
+                                          sink = partial(copy.fcs.put, [card]) ) )
                 
-                copy = self.copy()
-                
-                output.append( Move( board = copy, source = partial(copy.stacks[i].take, 1),
-                                      sink = partial(copy.fcs.put, [take_stack.last_card]) ) )
-            
-            # check the pile
-            if self.pile.can_discard([take_stack.last_card]):
-                
-                copy = self.copy()
-                
-                output.append( Move( board = copy, source = partial(copy.stacks[i].take, 1),
-                                      sink = partial(copy.pile.discard, [take_stack.last_card]) ) )
+                # check the pile
+                if self.pile.can_discard([card]):
+                    
+                    copy = self.copy()
+                    
+                    output.append( Move( board = copy, source = partial(copy.stacks[i].take, 1),
+                                          sink = partial(copy.pile.discard, [card]) ) )
                 
         # iterate through every card on the freecells
         fcs_dict = self.fcs.fcs
@@ -511,7 +520,7 @@ class Board:
             # check that card is not None
             if isinstance(card, Card):
                 # check the stacks
-                for put_stack in self.stacks:
+                for j, put_stack in enumerate(self.stacks):
                     if put_stack.can_add([card]):
                         
                         copy = self.copy()
@@ -529,11 +538,6 @@ class Board:
                 
         print(f"Found {colored(str(len(output)), 'magenta')} moves.")
         return output
-    
-    
-    def move(self, move):
-        ''' execute the move in question '''
-        move.move()
         
     def copy(self):
         ''' return deepcopy of self '''
