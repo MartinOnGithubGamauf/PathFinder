@@ -120,8 +120,8 @@ class Graph:
                     node.edge_list.remove(edge)
                     print(f"Edge {number} removed.")
                     
-    def solve(self):
-        
+    def solve_closed(self):
+        ''' solve graph with closed_list '''
         step = 0
         solved = False
         
@@ -133,8 +133,6 @@ class Graph:
             if node.id == self.root:
                 self.open.append(node)
         # put all successor nodes into loop
-        #prev_node = self.closed[len(self.closed)-1] # last edge in closed
-        
         
         step = step + 1
         
@@ -176,47 +174,142 @@ class Graph:
             self.closed.append(self.open.pop(0))
             print(f"Put {prev_node.name} from open to closed.")
             
-            
             step = step + 1
                 
+        
+    def solve_without_closed(self):
+        ''' solve graph without closed list '''
+        from copy import deepcopy
+        
+        step = 0
+        solved = False
+        
+        print(f"\nStep {step}.\n")
+        print("Initializing open list.")
+        
+        # put root node into open list
+        for node in self.node_list:
+            if node.id == self.root:
+                self.open.append(node)
+        # put all successor nodes into loop
+        
+        step = step + 1
+        
+        while not solved:
             
-                        
+            print(f"\nStep {step}.\n")
             
+            # sort list by lowest f-Value
+            self.open.sort(key=lambda x: x.f)
+            prev_node = self.open[0]
+            print(f"Next investigated Node with lowest f-Value is {prev_node}.")
             
+            # if target node is investigated, lowest f-Value is found
+            if prev_node.id == self.target:
+                solved = True
+                print(f"Target found! \n Reached {prev_node.name} with f-Value {colored(prev_node.f, 'green')}.")
+                break
+            
+            # calculate f-Values for successor nodes
+            for edge in prev_node.edge_list:
+                
+                successor = deepcopy(edge.destination)
+                                
+                # calculate g and f values for the successor
+                successor.f = prev_node.g + edge.weight + successor.h
+                successor.g = prev_node.g + edge.weight
+                print(f"Calculation of f- and g-Value of {successor.name}. f={colored(successor.f, 'yellow')}, g={colored(successor.g, 'yellow')}.")
+                
+                # put successor in open and mark predecessor
+                successor.predecessor = prev_node
+                self.open.append(successor)
+                print(f"Put {successor.name} in open. Marked predecessor of {colored(successor.name, 'blue')} as {colored(prev_node.name, 'blue')}.")
+            
+            # remove prev_node from open list
+            self.open.pop(0)
+            print(f"Remove {prev_node.name} from open.")
+        
+      
+def example_closed():
+    ''' Solve graph with monotone heuristic '''
+    g = Graph()
+    
+    n0 = Node(name="Saarbrücken", h=222)
+    n1 = Node(name="Kaiserslautern", h=158)
+    n2 = Node(name="Frankfurt", h=96)
+    n3 = Node(name="Ludwigshafen", h=108)
+    n4 = Node(name="Karlsruhe", h=140)
+    n5 = Node(name="Würzburg", h=0)
+    n6 = Node(name="Heilbronn", h=87)
+    
+    g.add_node(n0)
+    g.add_node(n1)
+    g.add_node(n2)
+    g.add_node(n3)
+    g.add_node(n4)
+    g.add_node(n5)
+    g.add_node(n6)
+    
+    g.add_edge(n0, n1, 70)
+    g.add_edge(n0, n4, 145)
+    g.add_edge(n1, n2, 103)
+    g.add_edge(n1, n3, 53)
+    g.add_edge(n2, n5, 116)
+    g.add_edge(n3, n5, 183)
+    g.add_edge(n4, n6, 84)
+    g.add_edge(n5, n5, 102)
+    
+    print(g)
+    
+    g.root = 0 # Saarbrücken
+    g.target = 5 # Würzburg
+    
+    g.solve_closed()
+    
+    return g
+
+    
+def example_without_closed():
+    ''' Solve graph with permitted heuristic
+        requires bidirectional edges to work '''
+    g = Graph()
+    
+    n0 = Node(name="Start", h=40)
+    n1 = Node(name="K1", h=30)
+    n2 = Node(name="K2", h=0)
+    n3 = Node(name="U", h=0)
+    n4 = Node(name="Ziel", h=0)
+    
+    g.add_node(n0)
+    g.add_node(n1)
+    g.add_node(n2)
+    g.add_node(n3)
+    g.add_node(n4)
+    
+    g.add_edge(n0, n1, 10)
+    g.add_edge(n1, n0, 10) # bidirectional
+    g.add_edge(n0, n3, 25)
+    g.add_edge(n3, n0, 25) # bidirectional
+    g.add_edge(n1, n2, 20)
+    g.add_edge(n2, n1, 20) # bidirectional
+    g.add_edge(n3, n2, 10)
+    g.add_edge(n2, n3, 10) # bidirectional
+    g.add_edge(n2, n4, 10)
+    g.add_edge(n4, n2, 10) # bidirectional
+    
+    print(g)
+    
+    g.root = 0 # Start
+    g.target = 4 # Ziel
+    
+    g.solve_without_closed()
+
+    return g
 
 
-g = Graph()
-
-n0 = Node(name="Saarbrücken", h=222)
-n1 = Node(name="Kaiserslautern", h=158)
-n2 = Node(name="Frankfurt", h=96)
-n3 = Node(name="Ludwigshafen", h=108)
-n4 = Node(name="Karlsruhe", h=140)
-n5 = Node(name="Würzburg", h=0)
-n6 = Node(name="Heilbronn", h=87)
-
-g.add_node(n0)
-g.add_node(n1)
-g.add_node(n2)
-g.add_node(n3)
-g.add_node(n4)
-g.add_node(n5)
-g.add_node(n6)
-
-g.add_edge(n0, n1, 70)
-g.add_edge(n0, n4, 145)
-g.add_edge(n1, n2, 103)
-g.add_edge(n1, n3, 53)
-g.add_edge(n2, n5, 116)
-g.add_edge(n3, n5, 183)
-g.add_edge(n4, n6, 84)
-g.add_edge(n5, n5, 102)
-
-print(g)
-
-g.root = 0 # Saarbrücken
-g.target = 5 # Würzburg
-
-g.solve()
-
+if __name__=='__main__':
+    
+    g = example_without_closed()
+    
+    
     
