@@ -10,10 +10,6 @@ Created on Thu Dec  7 16:23:11 2023
 
 ''' implement A* algorithm, follow example from https://de.wikipedia.org/wiki/A*-Algorithmus '''
 
-# for implementation with Board and Moves, we need
-#   - function to determine h-value for each board: The h-value should be the minimum amount of moves it takes to finish the game 
-#            -> (needs to know the target node!)
-#   - cycle detection
 
 from termcolor import colored
 
@@ -96,7 +92,8 @@ class Node: # or Vertex
             ordered = stack.takable
             unordered = len(stack.stack) - ordered
             h += ordered
-            h += 2*unordered
+            h += sum(range(2,unordered+2))
+            #h += 2*unordered
         return h
         
         
@@ -233,7 +230,24 @@ class Graph:
             
             step = step + 1
             
-                
+    def show(self):
+        ''' Show how the target node is reached from root 
+            compile all the nodes from target to root '''
+        
+        show = [self.target]
+        
+        # compile list from target to root
+        while self.root not in show: 
+            show.append(show[len(show)-1].predecessor)
+        
+        # reverse the list
+        for node in reversed(show):
+            print(node.board)
+            print("")
+        
+        # print the path
+            
+            
             
                         
 from main import Card, Stack, Pile, FC, Board, Solution_Board, Move
@@ -259,5 +273,4 @@ g.target = target # node
 g.root = root # node
 
 g.assemble()
-
-print(g)
+g.show()

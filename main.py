@@ -428,6 +428,7 @@ class FC:
 class Board:
     ''' acts as Node/Vertex or Knoten '''
     
+    CARD_AMOUNT = 5
     STACK_SIZE = 2
     FC_SIZE = FC.AMOUNT
     
@@ -455,7 +456,7 @@ class Board:
     # FUNCTIONS #
     def deal_cards(self) -> None:
         # generate cards
-        cards_to_deal = [Card((0,i)) for i in range(5)] #len(Card.RANKS)
+        cards_to_deal = [Card((0,i)) for i in range(Board.CARD_AMOUNT)]
         
         # shuffle the cards and deal to the stacks
         #from random import shuffle
@@ -553,7 +554,7 @@ class Solution_Board(Board):
         self.pile = Pile()
         self.fcs = FC()
         
-        cards_to_deal = [Card((0,i)) for i in range(5)]
+        cards_to_deal = [Card((0,i)) for i in range(Board.CARD_AMOUNT)]
         for card in cards_to_deal:
             self.pile.discard([card])
 
