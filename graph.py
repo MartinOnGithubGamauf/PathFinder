@@ -11,6 +11,11 @@ Created on Fri Dec  1 21:57:25 2023
 ''' implement A* algorithm, follow example from https://de.wikipedia.org/wiki/A*-Algorithmus '''
 
 
+# for implementation with Board and Moves, we need
+#   - function to determine h-value for each board: The h-value should be the minimum amount of moves it takes to finish the game 
+#            -> (needs to know the target node!)
+#   - cycle detection
+
 from termcolor import colored
 
 
@@ -54,21 +59,21 @@ class Node: # or Vertex
     COUNTID = 0
 
     # INIT #
-    def __init__(self, name: str, h: int):
+    def __init__(self, board, h: int=1):
         self.id = 0
-        self.name = name
+        self.board = board
         self.edge_list = []
         self.f = 0 # f value, guesses the length of path to target
         self.g = 0 # g value, gives the number of nodes from root node
         self.h = h # h value, guessed cost from current node to target
-        self.predecessor = 0
+        self.predecessor = None
         
         self.id = Node.COUNTID
         Node.COUNTID = Node.COUNTID + 1
         
     # MAGIC METHODS #
     def __repr__(self):
-         return f"Node {self.id} - {colored(self.name, 'cyan')}"
+         return f"Node {self.id} - {colored(self.id, 'cyan')}"
      
     # FUNCTIONS #
     def calculate_f(self):
@@ -183,45 +188,30 @@ class Graph:
                         
 from main import Card, Stack, Pile, FC, Board, Solution_Board, Move
 
+print(f"\n{colored('||| ----- GENERATION OF BOARDS ----- |||', 'grey', 'on_green')}\n")
 
-
+sb = Solution_Board()
+print(sb)
 b = Board()
+print(b)
 
-            
+target = Node(board=sb)
+root = Node(board=b)
 
+print(f"\n{colored('||| ----- GENERATION OF GRAPH ----- |||', 'grey', 'on_green')}\n")
 
 g = Graph()
 
-n0 = Node(name="Saarbrücken", h=222)
-n1 = Node(name="Kaiserslautern", h=158)
-n2 = Node(name="Frankfurt", h=96)
-n3 = Node(name="Ludwigshafen", h=108)
-n4 = Node(name="Karlsruhe", h=140)
-n5 = Node(name="Würzburg", h=0)
-n6 = Node(name="Heilbronn", h=87)
+g.add_node(target)
+g.add_node(root)
 
-g.add_node(n0)
-g.add_node(n1)
-g.add_node(n2)
-g.add_node(n3)
-g.add_node(n4)
-g.add_node(n5)
-g.add_node(n6)
+g.target = 0 # id of node
+g.root = 1 # id of node 
 
-g.add_edge(n0, n1, 70)
-g.add_edge(n0, n4, 145)
-g.add_edge(n1, n2, 103)
-g.add_edge(n1, n3, 53)
-g.add_edge(n2, n5, 116)
-g.add_edge(n3, n5, 183)
-g.add_edge(n4, n6, 84)
-g.add_edge(n5, n5, 102)
+#g.assemble()
 
 print(g)
 
-g.root = 0 # Saarbrücken
-g.target = 5 # Würzburg
-
-g.solve()
+#g.solve()
 
     

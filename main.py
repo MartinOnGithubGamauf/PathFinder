@@ -555,8 +555,8 @@ class Move:
     def move(self):
         self()
         
-
-b = Board()
-s = Solution_Board()
-
-# --> remove cyclig moves?!
+if __name__=="__main__":
+    b = Board()
+    s = Solution_Board()
+    
+    # --> remove cyclig moves?!
