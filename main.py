@@ -528,7 +528,7 @@ class Board:
                         output.append( Move( board = copy, source = partial(copy.fcs.get, [card]),
                                               sink = partial(copy.stacks[j].add, [card]) ) )
             
-                # check the freecells
+                # check the pile
                 if self.pile.can_discard([card]):
                     
                     copy = self.copy()
@@ -546,8 +546,6 @@ class Board:
         
 
 class Solution_Board(Board):
-    STACK_SIZE = 2
-    FC_SIZE = FC.AMOUNT
     
     # INIT # 
     def __init__(self):
