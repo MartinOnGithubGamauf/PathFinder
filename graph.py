@@ -167,7 +167,7 @@ class Graph:
         step = step + 1
         
         # while there is no edge to the root node, explore
-        while not target_found:
+        while 1: # not target_found:
             print(f"\n{colored('Step ' + str(step), 'white', 'on_yellow')}.\n")
             
             # sort list by lowest f-Value
@@ -179,7 +179,7 @@ class Graph:
             # if target node is investigated, lowest f-Value is found
             if prev_node == target:
                 solved = True
-                print(f"Target found! \n Reached {prev_node} with f-Value {colored(prev_node.f, 'green')}.")
+                print(f"{colored('Target found!', 'white', 'on_blue')} \n Reached {prev_node} with f-Value {colored(prev_node.f, 'green')}.\n\n")
                 break
             
             # get all possible move from the node
@@ -193,16 +193,16 @@ class Graph:
                 successor = Node(board=move())
                 
                 # check if the target is found!
-                if successor == target:
+                if successor.board == target.board:
+                    print(f"{colored('Found target board!', 'white', 'on_blue')}")
                     target_found = True
                     successor = target
                 
                 # do not add node if the board is already in node_list
                 add_it = True
-                for node in self.node_list:
-                    if node.board == successor.board:
-                        add_it = False
-                        print(f"Successor {successor} was already in graph.node_list.")
+                if any([node.board == successor.board for node in self.node_list]):
+                    add_it = False
+                    print(f"Successor {successor} was already in graph.node_list.")
                 if add_it:
                     self.add_node(successor)
                     print(f"Successor {successor} put in graph.node_list. h={colored(successor.h, 'yellow')}.")
@@ -213,31 +213,26 @@ class Graph:
                 
                 
                 ## A* ALGORITHM
-                # check if successor has already been investigated
-                if successor in self.closed:
-                    break
-                
                 # calculate g and f values for the successor
                 successor.f = prev_node.g + this_edge.weight + successor.h
                 successor.g = prev_node.g + this_edge.weight
                 print(f"Calculation of f- and g-Value of {successor}. f={colored(successor.f, 'yellow')}, g={colored(successor.g, 'yellow')}.")
                 
-                if add_it:
+                if (add_it or target_found): # if the target node is found, add it to the open_list!
                     # put successor in open and mark predecessor
                     successor.predecessor = prev_node
                     self.open.append(successor)
                     print(f"Put {successor} in open. Marked predecessor of {colored(successor, 'blue')} as {colored(prev_node, 'blue')}.")
                 
             
-            # put investigated node from open to closed
-            self.closed.append(self.open.pop(0))
-            print(f"Put {prev_node} from open to closed.")
-                
+            # remove investigated node from open 
+            self.open.pop(0)
+            print(f"Remove {prev_node} from open.")
+            
+            print(self)
+            
             step = step + 1
             
-            if step > 20:
-                break
-                
                 
             
                         
@@ -266,5 +261,3 @@ g.root = root # node
 g.assemble()
 
 print(g)
-
-#g.solve()
