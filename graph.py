@@ -246,7 +246,7 @@ class Graph:
             print("")
         
         # print the path
-            
+        print(f"Solved in {len(show)} moves.")
             
             
                         
