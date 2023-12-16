@@ -112,7 +112,7 @@ class Card:
     
     # FUNCTIONS #
     @assert_other
-    def card_fits_on_stack(self, other):
+    def card_fits_on_stack(self, other) -> bool:
         ''' returns True if the Card 'other' fits on 'self', otherwise False '''
         RED = self.RED
         BLACK = self.BLACK
@@ -125,7 +125,7 @@ class Card:
             
     
     @assert_other
-    def card_fits_on_pile(self, other):
+    def card_fits_on_pile(self, other) -> bool:
         ''' returns True if the Card 'other' fits on 'self', otherwise False '''
         if self.suit == other.suit:
             if self.rank == other.rank - 1:
@@ -298,29 +298,35 @@ class Pile:
     
     @assert_other
     def __eq__(self, other):
-        # check if .highest is same type for self and other
-        if isinstance(self.highest, type(other.highest)):
+        # check if .highest is same type for self and other for each card
+        if all([self.highest[i] == type(other.highest[i]) for i in range(4)]):
             if self.highest == other.highest:
                 return True
         return False
         
     # FUNCTIONS #
-    def get_highest(self):
+    def get_highest(self) -> dict: #??? wie highest, list of highest card on each pile 
         ''' returns the highest card on the pile
         returns None, if there are no cards '''
-        if len(self.pile) == 0:
-            return None
-        else:
-            return self.pile[len(self.pile)-1]
+        ret = dict()
+        for suit in self.pile:
+            cards = self.pile[suit]
+            l = len(cards)
+            if l == 0:
+                ret[suit] = None
+            else:
+                ret[suit] = cards[len(cards)-1]
+        return ret
     
     @assert_list_length_1
-    def can_discard(self, card: list) -> None:
+    def can_discard(self, card: list) -> bool:
         ''' returns if the card can be put on the pile '''
-        if not self.highest: # highest == None 
+        suit = card.suit
+        if not self.highest[suit]: # highest == None 
             if card.rank == 0:
                 print("Card fits on Pile.")
                 return True
-        elif self.highest.card_fits_on_pile(card):
+        elif self.highest[suit].card_fits_on_pile(card):
             print("Card fits on Pile.")
             return True
         else:
@@ -332,13 +338,14 @@ class Pile:
     def discard(self, card: list) -> None:
         ''' puts a card on the discard pile if the card fits on the other 
         card has to be a list of length 1 '''
+        suit = card.suit
         pile = self.pile
-        highest = self.highest     
-        if not highest: # highest == None 
+        highest = self.highest
+        if not highest[suit]: # highest == None 
             if card.rank == 0:
-                pile.append(card)
-        elif highest.card_fits_on_pile(card):
-            pile.append(card)
+                pile[suit].append(card)
+        elif highest[suit].card_fits_on_pile(card):
+            pile[suit].append(card)
         return
     
 
@@ -433,10 +440,11 @@ class Board:
     FC_SIZE = FC.AMOUNT
     
     # INIT # 
-    def __init__(self):
+    def __init__(self, seed: int=5):
         self.stacks = [Stack() for i in range(Board.STACK_SIZE)]
         self.pile = Pile()
         self.fcs = FC()
+        self.seed = seed
         
         self.deal_cards()
     
@@ -461,7 +469,7 @@ class Board:
         # shuffle the cards and deal to the stacks
         #from random import shuffle
         import random
-        random.Random(5).shuffle(cards_to_deal)
+        random.Random(self.seed).shuffle(cards_to_deal)
         
         # deal cards uniformly to stacks
         stack_number = len(self.stacks)
@@ -580,5 +588,9 @@ class Move:
 if __name__=="__main__":
     b = Board()
     s = Solution_Board()
-    
+    d = Board(seed = 1)
+    d.pile.discard( d.stacks[1].take(1) )
+    print(d)
+    print(b.pile == b.pile)
+    print(b.pile == d.pile)
     
