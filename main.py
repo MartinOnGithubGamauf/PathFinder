@@ -299,10 +299,14 @@ class Pile:
     @assert_other
     def __eq__(self, other):
         # check if .highest is same type for self and other for each card
-        if all([self.highest[i] == type(other.highest[i]) for i in range(4)]):
-            if self.highest == other.highest:
-                return True
-        return False
+        tf = []
+        for i in range(4):
+            if isinstance(self.highest[i], type(other.highest[i])):
+                if self.highest[i] == other.highest[i]:
+                    tf.append(True)
+            else:
+                tf.append(False)
+        return all(tf)
         
     # FUNCTIONS #
     def get_highest(self) -> dict: #??? wie highest, list of highest card on each pile 
