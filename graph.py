@@ -197,9 +197,11 @@ class Graph:
                 
                 # do not add node if the board is already in node_list
                 add_it = True
-                if any([node.board == successor.board for node in self.node_list]):
-                    add_it = False
-                    print(f"Successor {successor} was already in graph.node_list.")
+                #if any([node.board == successor.board for node in self.node_list]):
+                for node in reversed(self.node_list):
+                    if node.board == successor.board:    
+                        add_it = False
+                        print(f"Successor {successor} was already in graph.node_list.")
                 if add_it:
                     self.add_node(successor)
                     print(f"Successor {successor} put in graph.node_list. h={colored(successor.h, 'yellow')}.")
@@ -274,3 +276,19 @@ g.root = root # node
 
 g.assemble()
 g.show()
+
+''' TIME CALCULATION RESULTS '''
+''' Seed = 5, Stack size = 8, FC amount = 4, Pile size = 4 '''
+'''  --> card_amount and steps to solve 
+CARD_AMOUNT = 1:        16 setps    5 moves     240 nodes
+CARD_AMOUNT = 2:        81 steps    9 moves     1665 nodes
+CARD_AMOUNT = 3:        106 steps   14 moves    1815 nodes
+CARD_AMOUNT = 4:        232 steps   20 moves    3695 nodes
+CARD_AMOUNT = 5:        ?
+CARD_AMOUNT = 6:        58 steps    31 moves    1149 nodes
+CARD_AMOUNT = 7:        ? >7500 nodes
+CARD_AMOUNT = 8:        ? > 4000 nodes
+CARD_AMOUNT = 9:        ? > 5000 nodes
+'''
+
+

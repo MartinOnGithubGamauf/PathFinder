@@ -439,7 +439,7 @@ class FC:
 class Board:
     ''' acts as Node/Vertex or Knoten '''
     
-    CARD_AMOUNT = 3
+    CARD_AMOUNT = 9
     STACK_SIZE = 8
     FC_SIZE = FC.AMOUNT
     
