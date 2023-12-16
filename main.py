@@ -358,7 +358,7 @@ class FC:
     0 represents an empty cell'''
     
     # CONFIGURATION VARIABLES #
-    AMOUNT = 2
+    AMOUNT = 4
     
     # DECORATORS #
     def update(func):
@@ -439,8 +439,8 @@ class FC:
 class Board:
     ''' acts as Node/Vertex or Knoten '''
     
-    CARD_AMOUNT = 5
-    STACK_SIZE = 2
+    CARD_AMOUNT = 3
+    STACK_SIZE = 8
     FC_SIZE = FC.AMOUNT
     
     # INIT # 
@@ -468,7 +468,7 @@ class Board:
     # FUNCTIONS #
     def deal_cards(self) -> None:
         # generate cards
-        cards_to_deal = [Card((0,i)) for i in range(Board.CARD_AMOUNT)]
+        cards_to_deal = [Card((j,i)) for i in range(Board.CARD_AMOUNT) for j in range(len(Card.SUITS))]
         
         # shuffle the cards and deal to the stacks
         #from random import shuffle
@@ -566,7 +566,7 @@ class Solution_Board(Board):
         self.pile = Pile()
         self.fcs = FC()
         
-        cards_to_deal = [Card((0,i)) for i in range(Board.CARD_AMOUNT)]
+        cards_to_deal = [Card((j,i)) for i in range(Board.CARD_AMOUNT) for j in range(len(Card.SUITS))]
         for card in cards_to_deal:
             self.pile.discard([card])
 
