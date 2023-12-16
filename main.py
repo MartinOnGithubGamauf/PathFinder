@@ -289,8 +289,8 @@ class Pile:
     
     # INIT #
     def __init__(self):
-        self.pile = []
-        self.highest = None
+        self.pile = {0:[], 1:[], 2:[], 3:[]}
+        self.highest = {i:None for i in range(4)}
         
     # MAGIC METHODS #
     def __repr__(self):
