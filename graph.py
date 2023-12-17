@@ -14,6 +14,8 @@ Created on Thu Dec  7 16:23:11 2023
 ''' implement openlist as binary heap '''
 ''' optimize algorithm via openlist.decreasekey, so time complexity becomes O(log(V)*V) '''
 
+''' implement Heuristic class '''
+
 from termcolor import colored
 
 

@@ -10,9 +10,9 @@ Created on Sun Nov 26 16:19:44 2023
 ### SETUP SMALL SCALE FREECELL BOARD
 #-> traceback, falls ein error ist, dass sich das board nicht verändert! (take from stack, but cant put on pile!, take from freecell but cant put on stack...)
 
-#--> implement assembly of Graph
-
 ## Definition ungerichteten Graphs
+
+''' implement moving tow cards at once '''
 
 from termcolor import colored
 
