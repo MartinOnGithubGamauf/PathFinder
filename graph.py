@@ -88,12 +88,15 @@ class Node: # or Vertex
         for key in fcs.fcs:
             if fcs.fcs[key]: # if there is a card
                 h += 1
-        for stack in stacks:
+        '''for stack in stacks:
             ordered = stack.takable
             unordered = len(stack.stack) - ordered
             h += ordered
             h += sum(range(2,unordered+2))
-            #h += 2*unordered
+            #h += 2*unordered'''
+        for stack in stacks:
+            for i, card in enumerate(stack.stack):
+                h += card.rank + (stack.length-i)
         return h
         
         
@@ -275,20 +278,37 @@ g.target = target # node
 g.root = root # node
 
 g.assemble()
-g.show()
+#g.show()
 
-''' TIME CALCULATION RESULTS '''
+''' TIME CALCULATION RESULTS -- OLD HEURISTIC''' 
 ''' Seed = 5, Stack size = 8, FC amount = 4, Pile size = 4 '''
 '''  --> card_amount and steps to solve 
 CARD_AMOUNT = 1:        16 setps    5 moves     240 nodes
 CARD_AMOUNT = 2:        81 steps    9 moves     1665 nodes
 CARD_AMOUNT = 3:        106 steps   14 moves    1815 nodes
 CARD_AMOUNT = 4:        232 steps   20 moves    3695 nodes
-CARD_AMOUNT = 5:        ?
+CARD_AMOUNT = 5:        ? 
 CARD_AMOUNT = 6:        58 steps    31 moves    1149 nodes
 CARD_AMOUNT = 7:        ? >7500 nodes
 CARD_AMOUNT = 8:        ? > 4000 nodes
-CARD_AMOUNT = 9:        ? > 5000 nodes
+CARD_AMOUNT = 9:        ? > 10500 nodes
 '''
 
+''' TIME CALCULATION RESULTS -- NEW HEURISTIC''' 
+''' Seed = 5, Stack size = 8, FC amount = 4, Pile size = 4 '''
+'''  --> card_amount and steps to solve 
+CARD_AMOUNT = 1:        16 setps    5 moves     224 nodes
+CARD_AMOUNT = 2:        13 steps    9 moves     248 nodes
+CARD_AMOUNT = 3:        34 steps    18 moves    843 nodes --> nicht schnellster weg!
+CARD_AMOUNT = 4:        48 steps    24 moves    1286 nodes --> nicht schnellster weg!
+CARD_AMOUNT = 5:        30 steps    27 moves    627 nodes
+CARD_AMOUNT = 6:        35 steps    32 moves    638 nodes --> nicht schnellster weg!
+CARD_AMOUNT = 7:        57 steps    43 moves    889 nodes
+CARD_AMOUNT = 8:        127 steps   50 moves    1656 nodes
+CARD_AMOUNT = 9:        168 steps   64 moves    1742 nodes 
+CARD_AMOUNT = 10:       167 steps   69 moves    1290 nodes 
+CARD_AMOUNT = 11:       1499 steps  77 moves    5299 nodes 
+CARD_AMOUNT = 12:       426 steps   107 moves   1709 nodes 
+CARD_AMOUNT = 13:       168 steps   64 moves    1742 nodes 
+'''
 
