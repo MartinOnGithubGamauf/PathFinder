@@ -58,6 +58,7 @@ class Edge:
 class Node: # or Vertex
     
     COUNTID = 0
+    H_VERSION = "easy"
 
     # INIT #
     def __init__(self, board):
@@ -93,15 +94,24 @@ class Node: # or Vertex
         for key in fcs.fcs:
             if fcs.fcs[key]: # if there is a card
                 h += 1
-        '''for stack in stacks:
-            ordered = stack.takable
-            unordered = len(stack.stack) - ordered
-            h += ordered
-            h += sum(range(2,unordered+2))
-            #h += 2*unordered'''
-        for stack in stacks:
-            for i, card in enumerate(stack.stack):
-                h += card.rank + (stack.length-i)
+        if Node.H_VERSION == "easy":
+            for stack in stacks:
+                ordered = stack.takable
+                unordered = len(stack.stack) - ordered
+                h += ordered
+                h += 2*unordered
+        elif Node.H_VERSION == "medium":
+            for stack in stacks:
+                ordered = stack.takable
+                unordered = len(stack.stack) - ordered
+                h += ordered
+                h += sum(range(2,unordered+2))
+        elif Node.H_VERSION == "non-permitted":
+            for stack in stacks:
+                for i, card in enumerate(stack.stack):
+                    h += card.rank + (stack.length-i)
+        else:
+            raise ValueError("Version of heuristic is not set correctly.")
         return h
         
         
@@ -115,7 +125,6 @@ class Graph:
         self.root = None # id of node to start with
         self.target = None # id of node to stop
         self.open = []
-        self.closed = []
         
     # MAGIC METHODS #
     def __repr__(self):

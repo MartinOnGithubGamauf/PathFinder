@@ -12,7 +12,7 @@ Created on Sun Nov 26 16:19:44 2023
 
 ## Definition ungerichteten Graphs
 
-''' implement moving tow cards at once '''
+''' implement moving two cards at once '''
 
 from termcolor import colored
 
