@@ -10,6 +10,9 @@ Created on Thu Dec  7 16:23:11 2023
 
 ''' implement A* algorithm, follow example from https://de.wikipedia.org/wiki/A*-Algorithmus '''
 
+''' A* has wort-case time complexity O(V^2), V=amount of nodes '''
+''' implement openlist as binary heap '''
+''' optimize algorithm via openlist.decreasekey, so time complexity becomes O(log(V)*V) '''
 
 from termcolor import colored
 
@@ -309,6 +312,6 @@ CARD_AMOUNT = 9:        168 steps   64 moves    1742 nodes
 CARD_AMOUNT = 10:       167 steps   69 moves    1290 nodes 
 CARD_AMOUNT = 11:       1499 steps  77 moves    5299 nodes 
 CARD_AMOUNT = 12:       426 steps   107 moves   1709 nodes 
-CARD_AMOUNT = 13:       168 steps   64 moves    1742 nodes 
+CARD_AMOUNT = 13:       7581 steps  104 moves   11226 nodes 
 '''
 
