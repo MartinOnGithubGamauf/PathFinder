@@ -15,9 +15,15 @@ Created on Thu Dec  7 16:23:11 2023
 ''' optimize algorithm via openlist.decreasekey, so time complexity becomes O(log(V)*V) '''
 
 ''' implement Heuristic class '''
+# Manhatten Heuristic for 15-tile puzzle: 
+'''the Manhattan distance heuristic: for each movable tile, the number of grid units
+between the current position of the tile and its goal position are computed, and
+these values are summed for all tiles.'''
+# edge branching factor, node branching factor -> for 15-tile: ebf slighly grater than nbf -> good for IDA*
 
 from termcolor import colored
-
+from heapq import heappush, heappop
+from main import assert_other
 
 def assert_edge(func):
     def check_edge(self, edge):
@@ -58,7 +64,7 @@ class Edge:
 class Node: # or Vertex
     
     COUNTID = 0
-    H_VERSION = "easy"
+    H_VERSION = "medium"
 
     # INIT #
     def __init__(self, board):
@@ -76,11 +82,17 @@ class Node: # or Vertex
     # MAGIC METHODS #
     def __repr__(self):
          return f"Node {colored(self.id, 'cyan')}"
-     
+    
+    @assert_other
+    def __lt__(self, other):
+        return self.f < other.f
+        
     # FUNCTIONS #
     def calculate_h(self) -> int:
         ''' change the h value of the node '''
-        
+        # idea: charge 1 point for cards that are takable AND are only 1 higher than the card on the pile!
+        # so 2 of hearts is noly 1 move away of going onto ace of hearts on the pile,
+        # while 3 of hearts is 2 moves away (if it is also takable)
         ''' if card is on pile: 0 points
             if card is on fcs: 1 point
             if card is on stack: 
@@ -100,13 +112,13 @@ class Node: # or Vertex
                 unordered = len(stack.stack) - ordered
                 h += ordered
                 h += 2*unordered
-        elif Node.H_VERSION == "medium":
+        elif Node.H_VERSION == "medium": # type of Manhatten-Metric
             for stack in stacks:
                 ordered = stack.takable
                 unordered = len(stack.stack) - ordered
                 h += ordered
                 h += sum(range(2,unordered+2))
-        elif Node.H_VERSION == "non-permitted":
+        elif Node.H_VERSION == "non-admissable":
             for stack in stacks:
                 for i, card in enumerate(stack.stack):
                     h += card.rank + (stack.length-i)
@@ -176,7 +188,7 @@ class Graph:
         print("Initializing open list.")
         
         # put root node into open list
-        self.open.append(root)
+        heappush(self.open, root)
         
         step = step + 1
         
@@ -184,9 +196,9 @@ class Graph:
         while 1: # not target_found:
             print(f"\n{colored('Step ' + str(step), 'white', 'on_yellow')}.\n")
             
-            # sort list by lowest f-Value
-            self.open.sort(key=lambda x: x.f)
-            prev_node = self.open[0]
+            ## sort list by lowest f-Value
+            #self.open.sort(key=lambda x: x.f)
+            prev_node = heappop(self.open)
             print(f"Next investigated Node with lowest f-Value is {prev_node}.")
             print(prev_node.board)
             
@@ -237,13 +249,12 @@ class Graph:
                 if (add_it or target_found): # if the target node is found, add it to the open_list!
                     # put successor in open and mark predecessor
                     successor.predecessor = prev_node
-                    self.open.append(successor)
+                    heappush(self.open, successor)
                     print(f"Put {successor} in open. Marked predecessor of {colored(successor, 'blue')} as {colored(prev_node, 'blue')}.")
                 
             
-            # remove investigated node from open 
-            self.open.pop(0)
-            print(f"Remove {prev_node} from open.")
+            # remove investigated node from open - done by heap
+            print(f"Removed {prev_node} from open.")
             
             print(self)
             
@@ -268,61 +279,64 @@ class Graph:
         print(f"Solved in {len(show)} moves.")
             
             
-                        
-from main import Card, Stack, Pile, FC, Board, Solution_Board, Move
-
-print(f"\n{colored('||| ----- GENERATION OF BOARDS ----- |||', 'grey', 'on_green')}\n")
-
-sb = Solution_Board()
-print(sb)
-b = Board()
-print(b)
-
-target = Node(board=sb)
-root = Node(board=b)
-
-print(f"\n{colored('||| ----- GENERATION OF GRAPH ----- |||', 'grey', 'on_green')}\n")
-
-g = Graph()
-
-g.add_node(target)
-g.add_node(root)
-
-g.target = target # node
-g.root = root # node
-
-g.assemble()
-#g.show()
-
-''' TIME CALCULATION RESULTS -- OLD HEURISTIC''' 
-''' Seed = 5, Stack size = 8, FC amount = 4, Pile size = 4 '''
-'''  --> card_amount and steps to solve 
-CARD_AMOUNT = 1:        16 setps    5 moves     240 nodes
-CARD_AMOUNT = 2:        81 steps    9 moves     1665 nodes
-CARD_AMOUNT = 3:        106 steps   14 moves    1815 nodes
-CARD_AMOUNT = 4:        232 steps   20 moves    3695 nodes
-CARD_AMOUNT = 5:        ? 
-CARD_AMOUNT = 6:        58 steps    31 moves    1149 nodes
-CARD_AMOUNT = 7:        ? >7500 nodes
-CARD_AMOUNT = 8:        ? > 4000 nodes
-CARD_AMOUNT = 9:        ? > 10500 nodes
-'''
-
-''' TIME CALCULATION RESULTS -- NEW HEURISTIC''' 
-''' Seed = 5, Stack size = 8, FC amount = 4, Pile size = 4 '''
-'''  --> card_amount and steps to solve 
-CARD_AMOUNT = 1:        16 setps    5 moves     224 nodes
-CARD_AMOUNT = 2:        13 steps    9 moves     248 nodes
-CARD_AMOUNT = 3:        34 steps    18 moves    843 nodes --> nicht schnellster weg!
-CARD_AMOUNT = 4:        48 steps    24 moves    1286 nodes --> nicht schnellster weg!
-CARD_AMOUNT = 5:        30 steps    27 moves    627 nodes
-CARD_AMOUNT = 6:        35 steps    32 moves    638 nodes --> nicht schnellster weg!
-CARD_AMOUNT = 7:        57 steps    43 moves    889 nodes
-CARD_AMOUNT = 8:        127 steps   50 moves    1656 nodes
-CARD_AMOUNT = 9:        168 steps   64 moves    1742 nodes 
-CARD_AMOUNT = 10:       167 steps   69 moves    1290 nodes 
-CARD_AMOUNT = 11:       1499 steps  77 moves    5299 nodes 
-CARD_AMOUNT = 12:       426 steps   107 moves   1709 nodes 
-CARD_AMOUNT = 13:       7581 steps  104 moves   11226 nodes 
-'''
-
+if __name__ == "__main__":
+    from main import Card, Stack, Pile, FC, Board, Solution_Board, Move
+    
+    print(f"\n{colored('||| ----- GENERATION OF BOARDS ----- |||', 'grey', 'on_green')}\n")
+    
+    sb = Solution_Board()
+    print(sb)
+    b = Board(seed=3)
+    print(b)
+    
+    target = Node(board=sb)
+    root = Node(board=b)
+    
+    print(f"\n{colored('||| ----- GENERATION OF GRAPH ----- |||', 'grey', 'on_green')}\n")
+    
+    g = Graph()
+    
+    g.add_node(target)
+    g.add_node(root)
+    
+    g.target = target # node
+    g.root = root # node
+    
+    g.assemble()
+    #g.show()
+    
+    ''' TIME CALCULATION RESULTS -- medium HEURISTIC''' 
+    ''' Seed = 5, Stack size = 8, FC amount = 4, Pile size = 4 '''
+    '''  --> card_amount and steps to solve 
+    CARD_AMOUNT = 1:        16 setps    5 moves     240 nodes, 2x: 16 setps    5 moves     202 nodes
+    CARD_AMOUNT = 2:        81 steps    9 moves     1665 nodes, 2x: 52 steps    9 moves     922 nodes
+    CARD_AMOUNT = 3:        106 steps   14 moves    1815 nodes, 2x: 100 steps   14 moves    1674 nodes
+    CARD_AMOUNT = 4:        232 steps   20 moves    3695 nodes
+    CARD_AMOUNT = 5:        483 steps   26 moves    9865 nodes
+    CARD_AMOUNT = 6:        58 steps    31 moves    1149 nodes
+    CARD_AMOUNT = 7:        ? >7500 nodes
+    CARD_AMOUNT = 8:        ? > 4000 nodes
+    CARD_AMOUNT = 9:        ? > 10500 nodes
+    CARD_AMOUNT = 13:       1705 steps  124 moves   6858 nodes, seed = 5
+    CARD_AMOUNT = 13:       2408 steps  113 moves   7238 nodes, seed = 4
+    CARD_AMOUNT = 13:       3542 steps  112 moves   15248 nodes, seed = 3
+    '''
+    
+    ''' TIME CALCULATION RESULTS -- non-admissable HEURISTIC''' 
+    ''' Seed = 5, Stack size = 8, FC amount = 4, Pile size = 4 '''
+    '''  --> card_amount and steps to solve 
+    CARD_AMOUNT = 1:        16 setps    5 moves     224 nodes
+    CARD_AMOUNT = 2:        13 steps    9 moves     248 nodes
+    CARD_AMOUNT = 3:        34 steps    18 moves    843 nodes --> nicht schnellster weg!
+    CARD_AMOUNT = 4:        48 steps    24 moves    1286 nodes --> nicht schnellster weg!
+    CARD_AMOUNT = 5:        30 steps    27 moves    627 nodes
+    CARD_AMOUNT = 6:        35 steps    32 moves    638 nodes --> nicht schnellster weg!
+    CARD_AMOUNT = 7:        57 steps    43 moves    889 nodes
+    CARD_AMOUNT = 8:        127 steps   50 moves    1656 nodes
+    CARD_AMOUNT = 9:        168 steps   64 moves    1742 nodes 
+    CARD_AMOUNT = 10:       167 steps   69 moves    1290 nodes 
+    CARD_AMOUNT = 11:       1499 steps  77 moves    5299 nodes 
+    CARD_AMOUNT = 12:       426 steps   107 moves   1709 nodes 
+    CARD_AMOUNT = 13:       7581 steps  104 moves   11226 nodes 
+    '''
+    
