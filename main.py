@@ -16,6 +16,27 @@ Created on Sun Nov 26 16:19:44 2023
 
 from termcolor import colored
 
+PRINT_UPDATES = False
+PRINT_ATOMICS = False
+PRINT_MOVES = False
+
+# PRINTS # 
+def print_update(obj):
+    if PRINT_UPDATES:
+        print(obj)
+    return
+        
+def print_atomic(obj):
+    if PRINT_ATOMICS:
+        print(obj)
+    return
+
+def print_moves(obj):
+    if PRINT_MOVES:
+        print(obj)
+    return
+
+
 # WRAPPERS #
 def assert_list(func):
     def check_list(self, cards):
@@ -118,9 +139,9 @@ class Card:
         BLACK = self.BLACK
         if (self.suit in RED and other.suit in RED) or (self.suit in BLACK and other.suit in BLACK):
             if self.rank == other.rank + 1:
-                print(f"{other} fits on {self} in the stack.")
+                print_atomic(f"{other} fits on {self} in the stack.")
                 return True
-        print(f"{other} does not fit on {self} in the stack.")
+        print_atomic(f"{other} does not fit on {self} in the stack.")
         return False
             
     
@@ -129,9 +150,9 @@ class Card:
         ''' returns True if the Card 'other' fits on 'self', otherwise False '''
         if self.suit == other.suit:
             if self.rank == other.rank - 1:
-                print(f"{other} fits on {self} in the pile.")
+                print_atomic(f"{other} fits on {self} in the pile.")
                 return True
-        print(f"{other} does not fit on {self} in the pile.")
+        print_atomic(f"{other} does not fit on {self} in the pile.")
         return False
     
 
@@ -140,18 +161,18 @@ class Stack_Base:
     # DECORATORS #
     def update(func):
         def update_stack(self, *args):
-            print("")
-            print(colored("Stack:", "red") + " Executing function " + colored(func.__name__, 'cyan') + " with args " + colored(args, "cyan"))
+            print_update("")
+            print_update(colored("Stack:", "red") + " Executing function " + colored(func.__name__, 'cyan') + " with args " + colored(args, "cyan"))
             output = func(self, *args)
             self.length = len(self.stack)
             self.takable = self.get_takable()
             self.last_card = self.get_last_card()
-            print("Stack updated")
-            print(self.stack)
-            print(f"length: {self.length}")
-            print(f"takable: {self.takable}")
-            print(f"last_card: {self.last_card}")
-            print("")
+            print_update("Stack updated")
+            print_update(self.stack)
+            print_update(f"length: {self.length}")
+            print_update(f"takable: {self.takable}")
+            print_update(f"last_card: {self.last_card}")
+            print_update("")
             return output
             
         return update_stack
@@ -210,13 +231,13 @@ class Stack_Base:
         ''' returns if card can be put on the stack '''
         bottom_card_stack = self.last_card
         if not self.last_card: # if last_card is None
-            print("Card fits on Stack.")
+            print_atomic("Card fits on Stack.")
             return True
         if bottom_card_stack.card_fits_on_stack(card):
-            print("Card fits on Stack.")
+            print_atomic("Card fits on Stack.")
             return True
         else:
-            print("Card does not fit on Stack.")
+            print_atomic("Card does not fit on Stack.")
             return False
         
     
@@ -275,14 +296,14 @@ class Pile:
     # DECORATORS #
     def update(func):
         def update_pile(self, *args):
-            print("")
-            print(colored("Pile:", "magenta") + " Executing function " + colored(func.__name__, 'cyan') + " with args " + colored(args, "cyan"))
+            print_update("")
+            print_update(colored("Pile:", "magenta") + " Executing function " + colored(func.__name__, 'cyan') + " with args " + colored(args, "cyan"))
             output = func(self, *args)
             self.highest = self.get_highest()
-            print("Pile updated")
-            print(self.pile)
-            print(f"highest: {self.highest}")
-            print("")
+            print_update("Pile updated")
+            print_update(self.pile)
+            print_update(f"highest: {self.highest}")
+            print_update("")
             return output
         
         return update_pile
@@ -328,13 +349,13 @@ class Pile:
         suit = card.suit
         if not self.highest[suit]: # highest == None 
             if card.rank == 0:
-                print("Card fits on Pile.")
+                print_atomic("Card fits on Pile.")
                 return True
         elif self.highest[suit].card_fits_on_pile(card):
-            print("Card fits on Pile.")
+            print_atomic("Card fits on Pile.")
             return True
         else:
-            print("Card does not fit on Pile.")
+            print_atomic("Card does not fit on Pile.")
             return False
         
     @assert_list_length_1
@@ -363,12 +384,12 @@ class FC:
     # DECORATORS #
     def update(func):
         def update_fcs(self, *args):
-            print("")
-            print(colored("Free Cells:", "green") + " Executing function " + colored(func.__name__, 'cyan') + " with args " + colored(args, "cyan"))
+            print_update("")
+            print_update(colored("Free Cells:", "green") + " Executing function " + colored(func.__name__, 'cyan') + " with args " + colored(args, "cyan"))
             output = func(self, *args)
-            print("Free Cells updated")
-            print(self.fcs)
-            print("")
+            print_update("Free Cells updated")
+            print_update(self.fcs)
+            print_update("")
             return output
             
         return update_fcs
@@ -402,9 +423,9 @@ class FC:
         fcs = self.fcs
         for i in range(self.AMOUNT):
             if not isinstance(fcs[i], Card): #slot is 0
-                print("Freecells are available.")
+                print_atomic("Freecells are available.")
                 return True
-        print("Freecells are not available.")
+        print_atomic("Freecells are not available.")
         return False
     
     @assert_list_length_1
@@ -484,7 +505,7 @@ class Board:
             i = i % stack_number
     
     def get_all_moves(self) -> list:
-        print("\nGetting all moves:")
+        print_moves("\nGetting all moves:")
         
         from functools import partial
         output = []
@@ -549,7 +570,7 @@ class Board:
                     output.append( Move ( board = copy, source = partial(copy.fcs.get, [card]),
                                           sink = partial(copy.pile.discard, [card]) ) )
                 
-        print(f"Found {colored(str(len(output)), 'magenta')} moves.")
+        print_moves(f"Found {colored(str(len(output)), 'magenta')} moves.")
         return output
         
     def copy(self):

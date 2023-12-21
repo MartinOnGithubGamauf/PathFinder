@@ -25,6 +25,17 @@ from termcolor import colored
 from heapq import heappush, heappop
 from main import assert_other
 
+PRINT_BOARD_AND_GRAPH = False
+PRINT_INFOS = False
+
+# PRINTS #
+def print_info(obj):
+    if PRINT_INFOS:
+        print(obj)
+    return
+
+# WRAPPERS #
+
 def assert_edge(func):
     def check_edge(self, edge):
         ''' checks if edge is the of type Edge '''
@@ -64,7 +75,7 @@ class Edge:
 class Node: # or Vertex
     
     COUNTID = 0
-    H_VERSION = "medium"
+    H_VERSION = "easy"
 
     # INIT #
     def __init__(self, board):
@@ -154,7 +165,7 @@ class Graph:
                     self.remove_edge(edge.id)
                 
                 self.node_list.remove(node)
-                print(f"Node {number} removed.")
+                print_info(f"Node {number} removed.")
                 
             
     
@@ -168,7 +179,7 @@ class Graph:
             for edge in node.edge_list:
                 if edge.id == number:
                     node.edge_list.remove(edge)
-                    print(f"Edge {number} removed.")
+                    print_info(f"Edge {number} removed.")
     
         
     def assemble(self) -> None:
@@ -184,8 +195,8 @@ class Graph:
         solved = False
         target_found = False
         
-        print(f"\n{colored('Step ' + str(step), 'white', 'on_yellow')}.\n")
-        print("Initializing open list.")
+        print_info(f"\n{colored('Step ' + str(step), 'white', 'on_yellow')}.\n")
+        print_info("Initializing open list.")
         
         # put root node into open list
         heappush(self.open, root)
@@ -199,13 +210,14 @@ class Graph:
             ## sort list by lowest f-Value
             #self.open.sort(key=lambda x: x.f)
             prev_node = heappop(self.open)
-            print(f"Next investigated Node with lowest f-Value is {prev_node}.")
-            print(prev_node.board)
+            print_info(f"Next investigated Node with lowest f-Value is {prev_node}.")
+            if PRINT_BOARD_AND_GRAPH:
+                print(prev_node.board)
             
             # if target node is investigated, lowest f-Value is found
             if prev_node == target:
                 solved = True
-                print(f"{colored('Target found!', 'white', 'on_blue')} \n Reached {prev_node} with f-Value {colored(prev_node.f, 'green')}.\n\n")
+                print_info(f"{colored('Target found!', 'white', 'on_blue')} \n Reached {prev_node} with f-Value {colored(prev_node.f, 'green')}.\n\n")
                 break
             
             # get all possible move from the node
@@ -215,12 +227,12 @@ class Graph:
             for move in moves:
                 ## GRAPH CONSTRUCTION
                 # see where the move takes you, check through all nodes in graph to detect cycles
-                print(f"\nExecuting the move.")
+                print_info(f"\nExecuting the move.")
                 successor = Node(board=move())
                 
                 # check if the target is found!
                 if successor.board == target.board:
-                    print(f"{colored('Found target board!', 'white', 'on_blue')}")
+                    print_info(f"{colored('Found target board!', 'white', 'on_blue')}")
                     target_found = True
                     successor = target
                 
@@ -230,33 +242,34 @@ class Graph:
                 for node in reversed(self.node_list):
                     if node.board == successor.board:    
                         add_it = False
-                        print(f"Successor {successor} was already in graph.node_list.")
+                        print_info(f"Successor {successor} was already in graph.node_list.")
                 if add_it:
                     self.add_node(successor)
-                    print(f"Successor {successor} put in graph.node_list. h={colored(successor.h, 'yellow')}.")
+                    print_info(f"Successor {successor} put in graph.node_list. h={colored(successor.h, 'yellow')}.")
                    
                 # do add edge to the node
                 this_edge = self.add_edge(prev_node, successor, move)
-                print(f"Added new Edge from {prev_node} to {successor}.")
+                print_info(f"Added new Edge from {prev_node} to {successor}.")
                 
                 
                 ## A* ALGORITHM
                 # calculate g and f values for the successor
                 successor.f = prev_node.g + this_edge.weight + successor.h
                 successor.g = prev_node.g + this_edge.weight
-                print(f"Calculation of f- and g-Value of {successor}. f={colored(successor.f, 'yellow')}, g={colored(successor.g, 'yellow')}.")
+                print_info(f"Calculation of f- and g-Value of {successor}. f={colored(successor.f, 'yellow')}, g={colored(successor.g, 'yellow')}.")
                 
                 if (add_it or target_found): # if the target node is found, add it to the open_list!
                     # put successor in open and mark predecessor
                     successor.predecessor = prev_node
                     heappush(self.open, successor)
-                    print(f"Put {successor} in open. Marked predecessor of {colored(successor, 'blue')} as {colored(prev_node, 'blue')}.")
+                    print_info(f"Put {successor} in open. Marked predecessor of {colored(successor, 'blue')} as {colored(prev_node, 'blue')}.")
                 
             
             # remove investigated node from open - done by heap
-            print(f"Removed {prev_node} from open.")
+            print_info(f"Removed {prev_node} from open.")
             
-            print(self)
+            if PRINT_BOARD_AND_GRAPH:
+                print_info(self)
             
             step = step + 1
             
