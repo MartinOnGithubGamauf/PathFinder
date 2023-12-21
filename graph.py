@@ -25,10 +25,15 @@ from termcolor import colored
 from heapq import heappush, heappop
 from main import assert_other
 
-PRINT_BOARD_AND_GRAPH = False
-PRINT_INFOS = False
+PRINT_BOARD_AND_GRAPH = True
+PRINT_INFOS = True
 
 # PRINTS #
+def print_board_and_graph(obj):
+    if PRINT_BOARD_AND_GRAPH:
+        print(obj)
+    return
+
 def print_info(obj):
     if PRINT_INFOS:
         print(obj)
@@ -123,7 +128,7 @@ class Node: # or Vertex
                 unordered = len(stack.stack) - ordered
                 h += ordered
                 h += 2*unordered
-        elif Node.H_VERSION == "medium": # type of Manhatten-Metric
+        elif Node.H_VERSION == "medium": # type of Manhatten-Metric - COMMENT: Do not add 2 for every unordered card (under the unordered cards there could be an ordered stack!)
             for stack in stacks:
                 ordered = stack.takable
                 unordered = len(stack.stack) - ordered
@@ -211,8 +216,7 @@ class Graph:
             #self.open.sort(key=lambda x: x.f)
             prev_node = heappop(self.open)
             print_info(f"Next investigated Node with lowest f-Value is {prev_node}.")
-            if PRINT_BOARD_AND_GRAPH:
-                print(prev_node.board)
+            print_board_and_graph(prev_node.board)
             
             # if target node is investigated, lowest f-Value is found
             if prev_node == target:
@@ -268,8 +272,7 @@ class Graph:
             # remove investigated node from open - done by heap
             print_info(f"Removed {prev_node} from open.")
             
-            if PRINT_BOARD_AND_GRAPH:
-                print_info(self)
+            print_board_and_graph(self)
             
             step = step + 1
             

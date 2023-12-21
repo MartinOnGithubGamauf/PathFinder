@@ -16,9 +16,9 @@ Created on Sun Nov 26 16:19:44 2023
 
 from termcolor import colored
 
-PRINT_UPDATES = False
-PRINT_ATOMICS = False
-PRINT_MOVES = False
+PRINT_UPDATES = True
+PRINT_ATOMICS = True
+PRINT_MOVES = True
 
 # PRINTS # 
 def print_update(obj):
