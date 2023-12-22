@@ -90,7 +90,7 @@ class Graph:
         
         # IDA
         self.target = 0 # id of node to end with
-        self.stack = [] # represents the search path
+        self.stack = [] # represents the search path, LIFO Last-In First-Out
         self.path = []
         
         
@@ -157,6 +157,18 @@ class Graph:
     def solve_ida(self):
         ''' solve with pseudocode from https://en.wikipedia.org/wiki/Iterative_deepening_A* '''
         
+        def track(func):
+            level = 0
+            def wrapper(*args, **kwargs):
+                nonlocal level
+                print(f"\nIn: {colored(level, 'magenta')}")
+                level += 1
+                ret = func(*args, **kwargs)
+                level -= 1
+                print(f"Out: {colored(level, 'magenta')}\n")
+                return ret
+            return wrapper
+        
         step = 0
         found = False
         INF = 10000
@@ -170,11 +182,12 @@ class Graph:
         bound = root.h
         self.stack.append(root)
         
+        @track
         def search(stack, g, bound):
             nonlocal found, target, INF, FOUND
-            print(f"Current: g={g}, bound={bound}.")
+            print(f"{colored('Entering search:', 'yellow')} current g={g}, current bound={bound}.")
             
-            node = stack[len(stack)-1] # last node in stack
+            node = stack[-1] # last node in stack
             node.f = g + node.h
             print(f"Investigating {node}, it has f-value of {node.f}.")
             if node.f > bound: 
@@ -189,26 +202,36 @@ class Graph:
             # order the edge_list based on the lowest destination f-values
             node.edge_list.sort(key=lambda e: e.destination.f)
             
+            print(colored("Entering edge iteration.", 'green'))
+            print(f"{node} has {len(node.edge_list)} successors: {node.edge_list}")
+            
             # choose next successor with lowest f-value
             for edge in node.edge_list:
                 
                 successor = edge.destination
-                print(f"Looking for the next successor with lowest f-value, it is {successor} with {successor.f}.")
+                print(f"Looking for the next successor with lowest f-value, it is {successor} with f={successor.f}.")
                 
                 if successor not in stack:
-                    print("The successor was not in the stack, adding it now.\n")
+                    print("The successor was not in the stack, adding it now.")
                     stack.append(successor)
                     print("Setting the next t-value to the result of this successor:")
                     t = search(stack, g + edge.weight, bound)
+                    print(f"Now we compare the returned t={t} with minn={minn}.")
                     if t == FOUND:
                         print("We found the Target Node (with t).")
                         return FOUND
                     if t < minn:
-                        print(f"t-value is smaller than minn -> setting minn to t={t}.")
+                        print(f"t-value is smaller than minn -> setting minn to t=minn={t}.")
                         minn = t
-                    print(f"Removing {stack[len(stack)-1]} the fist item from the stack.")
-                    stack.pop()
+                    print(f"Removing the last item from the stack: {stack[-1]}.")
+                    stack.pop(-1)
+                else:
+                    print("The successor was already in the stack, going to next edge and successor.")
+                print(f"{colored('After edge iteration', 'green')}, the stack looks like this: {stack}")
                 
+            
+            print(f"{colored('Iteration of search is done', 'yellow')}, returning minn={minn}.")
+            print(f"The stack looks like this: {stack}")
             return minn
     
         
@@ -222,6 +245,7 @@ class Graph:
             if t == INF:
                 print("t NOT FOUND")
                 break
+            print(f"{colored('Starting search from anew!', 'cyan', 'on_yellow')}, setting bound to t=bound={t}.")
             bound = t
             
             
