@@ -228,6 +228,8 @@ class Graph:
             # remove prev_node from open list
             self.open.pop(0)
             print(f"Remove {prev_node.name} from open.")
+            
+            step = step + 1
         
       
 def example_closed():
@@ -309,7 +311,7 @@ def example_without_closed():
 
 if __name__=='__main__':
     
-    g = example_without_closed()
+    g = example_closed()
     
     
     
