@@ -122,7 +122,7 @@ class Node: # or Vertex
         for key in fcs.fcs:
             if fcs.fcs[key]: # if there is a card
                 h += 1
-        if Node.H_VERSION == "easy":
+        if Node.H_VERSION == "easy": # actually not admissible !!, the game could end in less moves !!
             for stack in stacks:
                 ordered = stack.takable
                 unordered = len(stack.stack) - ordered
@@ -152,7 +152,10 @@ class Graph:
         
         self.root = None # id of node to start with
         self.target = None # id of node to stop
+        
         self.open = []
+        
+        self.stack = []
         
     # MAGIC METHODS #
     def __repr__(self):
@@ -186,8 +189,7 @@ class Graph:
                     node.edge_list.remove(edge)
                     print_info(f"Edge {number} removed.")
     
-        
-    def assemble(self) -> None:
+    def assemble_A(self) -> None:
         ''' Starting with root, explore the board and add corresponding edges on the go.
         Use A* to determine which node to explore next.
         Stop at the first time the target node is reached. '''
@@ -276,6 +278,145 @@ class Graph:
             
             step = step + 1
             
+        
+    def assemble_IDA(self) -> None:
+        ''' Starting with root, explore the board and add corresponding edges on the go.
+        Use IDA* to determine which node to explore next.'''
+        
+        target = self.target
+        root = self.root
+        
+        # INITIALIZATION #
+        def track(func):
+            level = 0
+            def wrapper(*args, **kwargs):
+                nonlocal level
+                print(f"\nIn: {colored(level, 'magenta')}")
+                level += 1
+                ret = func(*args, **kwargs)
+                level -= 1
+                print(f"Out: {colored(level, 'magenta')}\n")
+                return ret
+            return wrapper
+        
+        step = 0
+        found = False
+        INF = 10000
+        FOUND = -999999
+        
+        print(f"\nStep {step}.\n")
+        print("Setting bound to h(root) and putting root in the stack.")
+        bound = root.h
+        self.stack.append(root)
+        
+        @track
+        def search(stack, g, bound):
+            nonlocal found, target, INF, FOUND
+            print(f"{colored('Entering search:', 'yellow')} current g={g}, current bound={bound}.")
+            
+            node = stack[-1] # last node in stack
+            print(f"{colored('Node points to ' + str(node) + '.', 'red', 'on_white')}")
+            node.g = g
+            node.f = g + node.h
+            print(f"Investigating {node}, it has f-value of {node.f}.")
+            if node.f > bound: 
+                print("The Node has a higher f-value then bound -> returning.")
+                return node.f
+            if node.board == target.board: 
+                print("We found the Target Node.")
+                return FOUND
+            print("The Node has a lower f-value then bound -> setting minn to INF")
+            minn = INF
+            
+            ## expand the node and add edges to the graph ##
+            moves = node.board.get_all_moves()
+            for move in moves:
+                successor = Node(board=move())
+                # check if the target is found!
+                is_target = False
+                if successor.board == target.board:
+                    print_info(f"{colored('Found target board!', 'white', 'on_blue')}")
+                    is_target = True
+                    successor = target
+                    
+                # update g and f value for the successor
+                successor.g = g+1
+                successor.f = g+1 + successor.h
+                
+                '''# do not add node if the board is already in node_list
+                add_it = True
+                #if any([node.board == successor.board for node in self.node_list]):
+                #for node_obj in reversed(self.node_list):
+                    if node_obj.board == successor.board:    
+                        add_it = False
+                        #print_info(f"Successor {successor} was already in graph.node_list.")
+                        # set the sucessor as the found node!
+                        successor = node_obj
+                        break
+                if add_it:
+                    self.add_node(successor)
+                    #print_info(f"Successor {successor} put in graph.node_list. h={colored(successor.h, 'yellow')}.")
+                '''# do add edge to the node
+                self.add_node(successor)
+                self.add_edge(node, successor, move)
+                #print_info(f"Added new Edge from {node} to {successor}.")
+                # mark predecessor
+                if True:#(add_it or is_target): # if the node comes up the 2nd time, do not set its predecessor
+                    successor.predecessor = node
+                    #print(f"{colored('Setting predecessor of ' + str(successor) + ' as ' + str(node) + '.', 'red', 'on_white')}")
+                
+            
+            ### IDA* ###
+            # order the edge_list based on the lowest destination f-values
+            node.edge_list.sort(key=lambda e: e.destination.f)
+            
+            print(colored("Entering edge iteration.", 'green'))
+            print(f"{node} has {len(node.edge_list)} successors: {node.edge_list}")
+            
+            # choose next successor with lowest f-value
+            for edge in node.edge_list:
+                
+                successor = edge.destination
+                print(f"Looking for the next successor with lowest f-value, it is {successor} with f={successor.f}.")
+                
+                if successor not in stack:
+                    print("The successor was not in the stack, adding it now.")
+                    stack.append(successor)
+                    print("Setting the next t-value to the result of this successor:")
+                    t = search(stack, g + edge.weight, bound)
+                    print(f"Now we compare the returned t={t} with minn={minn}.")
+                    if t == FOUND:
+                        print("We found the Target Node (with t).")
+                        return FOUND
+                    if t < minn:
+                        print(f"t-value is smaller than minn -> setting minn to t=minn={t}.")
+                        minn = t
+                    print(f"Removing the last item from the stack: {stack[-1]}.")
+                    stack.pop(-1)
+                else:
+                    print("The successor was already in the stack, going to next edge and successor.")
+                print(f"{colored('After edge iteration', 'green')}, minn={minn}, the stack looks like this: {stack}")
+                
+            
+            print(f"{colored('Iteration of search is done', 'yellow')}, returning minn={minn}.")
+            print(f"The stack looks like this: {stack}")
+            return minn
+    
+        
+        print("Entering loop")
+        while not found:
+            
+            t = search(self.stack, 0, bound)
+            if t == FOUND:
+                found = True
+                break
+            if t == INF:
+                print("t NOT FOUND")
+                break
+            print(f"{colored('Starting search from anew!', 'cyan', 'on_yellow')}, setting bound to t=bound={t}.")
+            bound = t
+            
+            
     def show(self):
         ''' Show how the target node is reached from root 
             compile all the nodes from target to root '''
@@ -284,15 +425,17 @@ class Graph:
         
         # compile list from target to root
         while self.root not in show: 
-            show.append(show[len(show)-1].predecessor)
+            show.append(show[-1].predecessor)
         
         # reverse the list
         for node in reversed(show):
+            print(f"{colored('F_VALUE: '+str(node.f)+', G_VALUE: '+str(node.g)+', H_VALUE: '+str(node.h), 'red', 'on_light_blue')}")
+            print(node)
             print(node.board)
             print("")
         
         # print the path
-        print(f"Solved in {len(show)} moves.")
+        print(f"Solved in {len(show)-1} moves.")
             
             
 if __name__ == "__main__":
@@ -317,9 +460,11 @@ if __name__ == "__main__":
     
     g.target = target # node
     g.root = root # node
+    root.g = 0 # for first iteration of IDA
+    root.f = root.g + root.h # for first iteration of IDA
     
-    g.assemble()
-    #g.show()
+    g.assemble_IDA()
+    g.show()
     
     ''' TIME CALCULATION RESULTS -- medium HEURISTIC''' 
     ''' Seed = 5, Stack size = 8, FC amount = 4, Pile size = 4 '''

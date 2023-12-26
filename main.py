@@ -16,8 +16,8 @@ Created on Sun Nov 26 16:19:44 2023
 
 from termcolor import colored
 
-PRINT_UPDATES = True
-PRINT_ATOMICS = True
+PRINT_UPDATES = False
+PRINT_ATOMICS = False
 PRINT_MOVES = True
 
 # PRINTS # 
@@ -460,7 +460,7 @@ class FC:
 class Board:
     ''' acts as Node/Vertex or Knoten '''
     
-    CARD_AMOUNT = 13
+    CARD_AMOUNT = 3
     STACK_SIZE = 8
     FC_SIZE = FC.AMOUNT
     

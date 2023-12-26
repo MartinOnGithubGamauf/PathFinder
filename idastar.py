@@ -90,10 +90,7 @@ class Graph:
         
         # IDA
         self.target = 0 # id of node to end with
-        self.stack = [] # represents the search path, LIFO Last-In First-Out
-        self.path = []
-        
-        
+        self.stack = [] # represents the search path, LIFO Last-In First-Out  
         
         
     # MAGIC METHODS #
@@ -188,6 +185,7 @@ class Graph:
             print(f"{colored('Entering search:', 'yellow')} current g={g}, current bound={bound}.")
             
             node = stack[-1] # last node in stack
+            node.g = g
             node.f = g + node.h
             print(f"Investigating {node}, it has f-value of {node.f}.")
             if node.f > bound: 
@@ -198,6 +196,11 @@ class Graph:
                 return FOUND
             print("The Node has a lower f-value then bound -> setting minn to INF")
             minn = INF
+            
+            # calculate f and g for the successors
+            for e in node.edge_list:
+                e.destination.g = g+1
+                e.destination.f = g+1 + e.destination.h
             
             # order the edge_list based on the lowest destination f-values
             node.edge_list.sort(key=lambda e: e.destination.f)
@@ -227,7 +230,7 @@ class Graph:
                     stack.pop(-1)
                 else:
                     print("The successor was already in the stack, going to next edge and successor.")
-                print(f"{colored('After edge iteration', 'green')}, the stack looks like this: {stack}")
+                print(f"{colored('After edge iteration', 'green')}, minn={minn}, the stack looks like this: {stack}")
                 
             
             print(f"{colored('Iteration of search is done', 'yellow')}, returning minn={minn}.")
