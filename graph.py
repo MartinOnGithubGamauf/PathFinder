@@ -122,12 +122,9 @@ class Node: # or Vertex
         for key in fcs.fcs:
             if fcs.fcs[key]: # if there is a card
                 h += 1
-        if Node.H_VERSION == "easy": # actually not admissible !!, the game could end in less moves !!
+        if Node.H_VERSION == "easy":
             for stack in stacks:
-                ordered = stack.takable
-                unordered = len(stack.stack) - ordered
-                h += ordered
-                h += 2*unordered
+                h += len(stack.stack)
         elif Node.H_VERSION == "medium": # type of Manhatten-Metric - COMMENT: Do not add 2 for every unordered card (under the unordered cards there could be an ordered stack!)
             for stack in stacks:
                 ordered = stack.takable
