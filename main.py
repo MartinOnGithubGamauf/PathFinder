@@ -458,7 +458,7 @@ class FC:
 class Board:
     ''' acts as Node/Vertex or Knoten '''
     
-    CARD_AMOUNT = 4
+    CARD_AMOUNT = 5
     STACK_SIZE = 8
     FC_SIZE = FC.AMOUNT
     
@@ -522,7 +522,8 @@ class Board:
                     copy = self.copy()
                     
                     output.append( Move( board = copy, source = partial(copy.stacks[i].take, 1),
-                                          sink = partial(copy.pile.discard, [card]) ) )
+                                          sink = partial(copy.pile.discard, [card]),
+                                          name = f"Move {card} from Stack {i} to Pile.") )
                 
                 # check the other stacks
                 for j in range(Board.STACK_SIZE):
@@ -534,7 +535,8 @@ class Board:
                             copy = self.copy() # copy the board for every move appended
                             
                             output.append( Move( board = copy, source = partial(copy.stacks[i].take, 1), # take_stack
-                                                  sink = partial(copy.stacks[j].add, [card]) ) ) # put_stack
+                                                  sink = partial(copy.stacks[j].add, [card]),
+                                                  name = f"Move {card} from Stack {i} to Stack {j}.") ) # put_stack
                 
                 # check the freecells
                 if self.fcs.can_put():
@@ -542,7 +544,8 @@ class Board:
                     copy = self.copy()
                     
                     output.append( Move( board = copy, source = partial(copy.stacks[i].take, 1),
-                                          sink = partial(copy.fcs.put, [card]) ) )
+                                          sink = partial(copy.fcs.put, [card]),
+                                          name = f"Move {card} from Stack {i} to Freecells.") )
             
                 
         # iterate through every card on the freecells
@@ -558,7 +561,8 @@ class Board:
                     copy = self.copy()
                     
                     output.append( Move ( board = copy, source = partial(copy.fcs.get, [card]),
-                                          sink = partial(copy.pile.discard, [card]) ) )
+                                          sink = partial(copy.pile.discard, [card]),
+                                          name = f"Move {card} from Freecells to Pile.") )
                     
                 # check the stacks
                 for j, put_stack in enumerate(self.stacks):
@@ -567,7 +571,8 @@ class Board:
                         copy = self.copy()
                         
                         output.append( Move( board = copy, source = partial(copy.fcs.get, [card]),
-                                              sink = partial(copy.stacks[j].add, [card]) ) )
+                                              sink = partial(copy.stacks[j].add, [card]),
+                                              name = f"Move {card} from Freecells to Stack {j}.") )
                 
                 
                 
@@ -596,12 +601,16 @@ class Move:
     ''' acts as Edge or Kante '''
     
     # INIT #
-    def __init__(self, board, source, sink):
+    def __init__(self, board, source, sink, name):
         self.board = board
         self.source = source # functool.partial to fetch card
         self.sink = sink # functool.partial to allocate card
+        self.name = name # description
     
     # MAGIC METHODS #
+    def __repr__(self):
+        return self.name
+    
     def __call__(self):    
         self.source()
         self.sink()

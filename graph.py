@@ -91,6 +91,7 @@ class Node: # or Vertex
         self.g = 0 # g value, gives the number of nodes from root node
         self.h = self.calculate_h() # h value, guessed cost from current node to target
         self.predecessor = None
+        self.predecessor_move = None
         
         self.id = Node.COUNTID
         Node.COUNTID = Node.COUNTID + 1
@@ -126,13 +127,16 @@ class Node: # or Vertex
                 1 to h if the card beneath is greater than the one on top '''
             # Card in Freecells
             for key in fcs.fcs:
-                if fcs.fcs[key]:
+                if fcs.fcs[key]: # if there is a card
                     h += 1
             # Card in Stacks
             for stack in stacks:
                 l = len(stack.stack)
                 h += l 
-                # if card on top is greater, add 1
+                # if card on top is greater, add 1 --> THIS HAS TO CHECK EACH AND 
+                #                                      EVERY CARD, NOT JUST 2 CARD 
+                #                                      RIGHT ON TOP OF EACH OTHER
+                #                                      --> use 2 Pointers Method
                 if l >= 0:
                     for i in range(l-1):
                         bottom = stack.stack[i]
@@ -143,22 +147,6 @@ class Node: # or Vertex
             raise ValueError("Version of heuristic is not set correctly.")
         return h
     
-        '''for key in fcs.fcs:
-            if fcs.fcs[key]: # if there is a card
-                h += 1
-        if Node.H_VERSION == "easy":
-            for stack in stacks:
-                h += len(stack.stack)
-        elif Node.H_VERSION == "medium": # type of Manhatten-Metric - COMMENT: Do not add 2 for every unordered card (under the unordered cards there could be an ordered stack!)
-            for stack in stacks:
-                ordered = stack.takable
-                unordered = len(stack.stack) - ordered
-                h += ordered
-                h += sum(range(2,unordered+2))
-        elif Node.H_VERSION == "non-admissable":
-            for stack in stacks:
-                for i, card in enumerate(stack.stack):
-                    h += card.rank + (stack.length-i)'''
             
 class Graph:
     ''' Directed graph '''
@@ -284,6 +272,7 @@ class Graph:
                 if (add_it or target_found): # if the target node is found, add it to the open_list!
                     # put successor in open and mark predecessor
                     successor.predecessor = prev_node
+                    successor.predecessor_move = move
                     heappush(self.open, successor)
                     print_info(f"Put {successor} in open. Marked predecessor of {colored(successor, 'blue')} as {colored(prev_node, 'blue')}.")
                 
@@ -380,6 +369,7 @@ class Graph:
                 # mark predecessor
                 if True:#(add_it or is_target): # if the node comes up the 2nd time, do not set its predecessor
                     successor.predecessor = node
+                    successor.predecessor_move = move
                     #print(f"{colored('Setting predecessor of ' + str(successor) + ' as ' + str(node) + '.', 'red', 'on_white')}")
                 
             
@@ -442,13 +432,19 @@ class Graph:
         
         # compile list from target to root
         while self.root not in show: 
-            show.append(show[-1].predecessor)
+            show.append(show[-1].predecessor_move)
+            show.append(show[-2].predecessor)
         
         # reverse the list
-        for node in reversed(show):
-            print(f"{colored('F_VALUE: '+str(node.f)+', G_VALUE: '+str(node.g)+', H_VALUE: '+str(node.h), 'red', 'on_light_blue')}")
-            print(node)
-            print(node.board)
+        for item in reversed(show):
+            if isinstance(item, Node):
+                node = item
+                print(f"{colored('F_VALUE: '+str(node.f)+', G_VALUE: '+str(node.g)+', H_VALUE: '+str(node.h), 'red', 'on_light_blue')}")
+                print(node)
+                print(node.board)
+            if isinstance(item, Move):
+                move = item
+                print(move)
             print("")
         
         # print the path
