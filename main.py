@@ -5,14 +5,12 @@ Created on Sun Nov 26 16:19:44 2023
 @author: Martin
 """
 
-# implement PathFinder Algorithm for use in FreeCell Solver
-
 ### SETUP SMALL SCALE FREECELL BOARD
 #-> traceback, falls ein error ist, dass sich das board nicht verändert! (take from stack, but cant put on pile!, take from freecell but cant put on stack...)
 
 ## Definition ungerichteten Graphs
 
-''' implement moving two cards at once '''
+''' -> implement moving more cards at once '''
 
 from termcolor import colored
 
@@ -460,7 +458,7 @@ class FC:
 class Board:
     ''' acts as Node/Vertex or Knoten '''
     
-    CARD_AMOUNT = 3
+    CARD_AMOUNT = 4
     STACK_SIZE = 8
     FC_SIZE = FC.AMOUNT
     
@@ -518,6 +516,14 @@ class Board:
             # only check this if there is a card on the stack
             if isinstance(card, Card):
                 
+                # check the pile
+                if self.pile.can_discard([card]):
+                    
+                    copy = self.copy()
+                    
+                    output.append( Move( board = copy, source = partial(copy.stacks[i].take, 1),
+                                          sink = partial(copy.pile.discard, [card]) ) )
+                
                 # check the other stacks
                 for j in range(Board.STACK_SIZE):
                     if i != j:
@@ -537,14 +543,7 @@ class Board:
                     
                     output.append( Move( board = copy, source = partial(copy.stacks[i].take, 1),
                                           sink = partial(copy.fcs.put, [card]) ) )
-                
-                # check the pile
-                if self.pile.can_discard([card]):
-                    
-                    copy = self.copy()
-                    
-                    output.append( Move( board = copy, source = partial(copy.stacks[i].take, 1),
-                                          sink = partial(copy.pile.discard, [card]) ) )
+            
                 
         # iterate through every card on the freecells
         fcs_dict = self.fcs.fcs
@@ -553,6 +552,14 @@ class Board:
             
             # check that card is not None
             if isinstance(card, Card):
+                # check the pile
+                if self.pile.can_discard([card]):
+                    
+                    copy = self.copy()
+                    
+                    output.append( Move ( board = copy, source = partial(copy.fcs.get, [card]),
+                                          sink = partial(copy.pile.discard, [card]) ) )
+                    
                 # check the stacks
                 for j, put_stack in enumerate(self.stacks):
                     if put_stack.can_add([card]):
@@ -561,14 +568,8 @@ class Board:
                         
                         output.append( Move( board = copy, source = partial(copy.fcs.get, [card]),
                                               sink = partial(copy.stacks[j].add, [card]) ) )
-            
-                # check the pile
-                if self.pile.can_discard([card]):
-                    
-                    copy = self.copy()
-                    
-                    output.append( Move ( board = copy, source = partial(copy.fcs.get, [card]),
-                                          sink = partial(copy.pile.discard, [card]) ) )
+                
+                
                 
         print_moves(f"Found {colored(str(len(output)), 'magenta')} moves.")
         return output
