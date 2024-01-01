@@ -80,7 +80,7 @@ class Edge:
 class Node: # or Vertex
     
     COUNTID = 0
-    H_VERSION = "easy"
+    H_VERSION = "exp"
 
     # INIT #
     def __init__(self, board):
@@ -119,7 +119,31 @@ class Node: # or Vertex
         fcs = self.board.fcs
         stacks = self.board.stacks
         # dont add anything for the pile
-        for key in fcs.fcs:
+        if Node.H_VERSION == "exp":
+            ''' add 1 point for each card on the board which is not in the pile '''
+            ''' if on the stack there the cards are ordered, do not add anything to h '''
+            ''' from the bottom of the stack (index [0]) to the top (index [-1]), add 
+                1 to h if the card beneath is greater than the one on top '''
+            # Card in Freecells
+            for key in fcs.fcs:
+                if fcs.fcs[key]:
+                    h += 1
+            # Card in Stacks
+            for stack in stacks:
+                l = len(stack.stack)
+                h += l 
+                # if card on top is greater, add 1
+                if l >= 0:
+                    for i in range(l-1):
+                        bottom = stack.stack[i]
+                        top = stack.stack[i+1]
+                        if (top.rank > bottom.rank and top.suit == bottom.suit):
+                            h += 1
+        else:
+            raise ValueError("Version of heuristic is not set correctly.")
+        return h
+    
+        '''for key in fcs.fcs:
             if fcs.fcs[key]: # if there is a card
                 h += 1
         if Node.H_VERSION == "easy":
@@ -134,12 +158,8 @@ class Node: # or Vertex
         elif Node.H_VERSION == "non-admissable":
             for stack in stacks:
                 for i, card in enumerate(stack.stack):
-                    h += card.rank + (stack.length-i)
-        else:
-            raise ValueError("Version of heuristic is not set correctly.")
-        return h
-        
-        
+                    h += card.rank + (stack.length-i)'''
+            
 class Graph:
     ''' Directed graph '''
     
@@ -442,7 +462,7 @@ if __name__ == "__main__":
     
     sb = Solution_Board()
     print(sb)
-    b = Board(seed=3)
+    b = Board(seed=4)
     print(b)
     
     target = Node(board=sb)
