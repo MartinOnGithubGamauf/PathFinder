@@ -136,25 +136,20 @@ class Node: # or Vertex
                 # if card on top is greater, add 1 --> THIS HAS TO CHECK EACH AND 
                 #                                      EVERY CARD, NOT JUST 2 CARD 
                 #                                      RIGHT ON TOP OF EACH OTHER
-                #                                      --> use sliding window
                 if l >= 0:
                     curr_min = {0: 10000, 1: 10000, 2: 10000, 3: 10000}
                     for i in range(l-1):
-                        a = stack.stack[i]
-                        
-                        if a.rank < curr_min[a.suit]:
-                            curr_min[a.suit] = a.rank
+                            a = stack.stack[i]
                             
-                        b = stack.stack[i+1]
-                        if a.card_fits_on_stack(b):
-                            continue
-                        elif a > b: # only true if a.suit == b.suit
-                            if b.rank > curr_min[a.suit]:
-                                h += 1
+                            if a.rank < curr_min[a.suit]:
+                                curr_min[a.suit] = a.rank
+                            
+                            b = stack.stack[i+1]
+                            
+                            if a.card_fits_on_stack(b):
                                 continue
-                        else:
-                            h += 1
-                            continue
+                            elif b.rank > curr_min[b.suit]: # if a is bigger than already found card of same suit -> count it
+                                h += 1
         else:
             raise ValueError("Version of heuristic is not set correctly.")
         return h
@@ -470,7 +465,7 @@ if __name__ == "__main__":
     
     sb = Solution_Board()
     print(sb)
-    b = Board(seed=3)
+    b = Board(seed=1)
     print(b)
     
     target = Node(board=sb)
