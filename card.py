@@ -507,8 +507,8 @@ class Board:
         # -> Weltformel 2: n_stacks = m, n_fcs = n, movable_into_empty = 2 ** (m-1) * (1 + n)
         n_fcs = 0
         n_stacks = 0
-        for key in self.fcs:
-            if not self.fcs[key]: # if it is None
+        for key in self.fcs.fcs:
+            if not self.fcs.fcs[key]: # if it is None
                 n_fcs += 1
         for stack in self.stacks:
             if len(stack.stack) == 0: # no Card on Stack
@@ -545,7 +545,6 @@ class Board:
         output = []
         
         # iterate through every possible card on the stack
-        # only try to move one card at a time
         for i, take_stack in enumerate(self.stacks):
             card = take_stack.last_card
             
@@ -559,20 +558,7 @@ class Board:
                     
                     output.append( Move( board = copy, source = partial(copy.stacks[i].take, 1),
                                           sink = partial(copy.pile.discard, [card]),
-                                          name = f"Move {card} from Stack {i} to Pile.") )
-                
-                # check the other stacks
-                for j in range(Board.STACK_SIZE):
-                    if i != j:
-                        put_stack = self.stacks[j]
-                        
-                        if put_stack.can_add([card]):
-                            
-                            copy = self.copy() # copy the board for every move appended
-                            
-                            output.append( Move( board = copy, source = partial(copy.stacks[i].take, 1), # take_stack
-                                                  sink = partial(copy.stacks[j].add, [card]),
-                                                  name = f"Move {card} from Stack {i} to Stack {j}.") ) # put_stack
+                                          name = f"Move {card} from Stack {i} to Pile.") ) 
                 
                 # check the freecells
                 if self.fcs.can_put():
@@ -583,6 +569,32 @@ class Board:
                                           sink = partial(copy.fcs.put, [card]),
                                           name = f"Move {card} from Stack {i} to Freecells.") )
             
+            # check the other stacks
+            for j in range(Board.STACK_SIZE):
+                if i != j:
+                    put_stack = self.stacks[j]
+                    
+                    # check for the last card and for the takable sub-stack
+                    takable = take_stack.takable # guarenteed greater than 0
+                    for k in range(1,takable+1): # iterate from 1 up to takable
+                        
+                        # stop if too many cards are moved at once
+                        if k > self.movable:
+                            break
+                        if len(put_stack.stack) == 0:
+                            if k > self.movable_into_empty:
+                                break
+                    
+                        l = len(take_stack.stack)
+                        cards = take_stack.stack[l-k:l] # take list of k cards which are takable
+                        
+                        if put_stack.can_add([cards[0]]): # check if the bottom card of the cards fits on the put_stack
+                            
+                            copy = self.copy() # copy the board for every move appended
+                            
+                            output.append( Move( board = copy, source = partial(copy.stacks[i].take, k), # take_stack
+                                                  sink = partial(copy.stacks[j].add, cards), # put_stack
+                                                  name = f"Move {cards} from Stack {i} to Stack {j}.") ) 
                 
         # iterate through every card on the freecells
         fcs_dict = self.fcs.fcs
