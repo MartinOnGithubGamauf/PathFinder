@@ -138,7 +138,7 @@ class Card:
         ''' returns True if the Card 'other' fits on 'self', otherwise False '''
         RED = self.RED
         BLACK = self.BLACK
-        if (self.suit in RED and other.suit in RED) or (self.suit in BLACK and other.suit in BLACK):
+        if (self.suit in RED and other.suit in BLACK) or (self.suit in BLACK and other.suit in RED):
             if self.rank == other.rank + 1:
                 print_atomic(f"{other} fits on {self} in the stack.")
                 return True

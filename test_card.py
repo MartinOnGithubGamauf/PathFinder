@@ -37,9 +37,10 @@ class TestCard(unittest.TestCase):
         c4 = Card((2,4))
         c5 = Card((2,6))
         c6 = Card((1,5))
-        self.assertTrue(c2.card_fits_on_stack(c1), 'card1 should fit in stack')
+        self.assertTrue(c6.card_fits_on_stack(c4), 'card1 should fit in stack')
         self.assertFalse(c2.card_fits_on_stack(c3), 'card1 should not fit in stack')
-        self.assertTrue(c4.card_fits_on_stack(c3), 'card1 should fit in stack')
+        self.assertTrue(c5.card_fits_on_stack(c6), 'card1 should fit in stack')
+        self.assertFalse(c2.card_fits_on_stack(c1), 'card1 should not fit in stack')
         self.assertFalse(c6.card_fits_on_stack(c5), 'card1 should not fit in stack')
         
         self.assertTrue(c1.card_fits_on_pile(c2), 'card1 should fit in pile')
