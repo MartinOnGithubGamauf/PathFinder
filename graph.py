@@ -23,7 +23,7 @@ these values are summed for all tiles.'''
 
 from termcolor import colored
 from heapq import heappush, heappop
-from main import assert_other
+from card import assert_other
 
 PRINT_BOARD_AND_GRAPH = True
 PRINT_INFOS = True
@@ -136,7 +136,7 @@ class Node: # or Vertex
                 # if card on top is greater, add 1 --> THIS HAS TO CHECK EACH AND 
                 #                                      EVERY CARD, NOT JUST 2 CARD 
                 #                                      RIGHT ON TOP OF EACH OTHER
-                #                                      --> use 2 Pointers Method
+                #                                      --> use sliding window
                 if l >= 0:
                     for i in range(l-1):
                         bottom = stack.stack[i]
@@ -452,7 +452,7 @@ class Graph:
             
             
 if __name__ == "__main__":
-    from main import Card, Stack, Pile, FC, Board, Solution_Board, Move
+    from card import Card, Stack, Pile, FC, Board, Solution_Board, Move
     
     print(f"\n{colored('||| ----- GENERATION OF BOARDS ----- |||', 'grey', 'on_green')}\n")
     
