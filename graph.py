@@ -138,11 +138,23 @@ class Node: # or Vertex
                 #                                      RIGHT ON TOP OF EACH OTHER
                 #                                      --> use sliding window
                 if l >= 0:
+                    curr_min = {0: 10000, 1: 10000, 2: 10000, 3: 10000}
                     for i in range(l-1):
-                        bottom = stack.stack[i]
-                        top = stack.stack[i+1]
-                        if (top.rank > bottom.rank and top.suit == bottom.suit):
+                        a = stack.stack[i]
+                        
+                        if a.rank < curr_min[a.suit]:
+                            curr_min[a.suit] = a.rank
+                            
+                        b = stack.stack[i+1]
+                        if a.card_fits_on_stack(b):
+                            continue
+                        elif a > b: # only true if a.suit == b.suit
+                            if b.rank > curr_min[a.suit]:
+                                h += 1
+                                continue
+                        else:
                             h += 1
+                            continue
         else:
             raise ValueError("Version of heuristic is not set correctly.")
         return h
@@ -448,7 +460,7 @@ class Graph:
             print("")
         
         # print the path
-        print(f"Solved in {len(show)//2} moves.")
+        print(f"Solved in {len(show)//2} moves (root h={self.root.h}).")
             
             
 if __name__ == "__main__":
