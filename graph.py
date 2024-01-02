@@ -458,7 +458,7 @@ if __name__ == "__main__":
     
     sb = Solution_Board()
     print(sb)
-    b = Board(seed=4)
+    b = Board(seed=3)
     print(b)
     
     target = Node(board=sb)

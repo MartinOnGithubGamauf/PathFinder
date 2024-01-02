@@ -74,10 +74,13 @@ class Card:
         the second correponding to the rank of the card '''
     
     # CONFIGURATION VARIABLES #
-    SUITS = {0:'Hearts', 1:'Clubs', 2:'Diamonds', 3:'Spades'} 
-    RANKS = {0:'Ace', 1:'2', 2:'3', 3:'4', 4:'5', 5:'6', 6:'7', 7:'8', 8:'9', 9:'10', 10:'Jack', 11:'Dame', 12:'King'}
+    #SUITS = {0:'Hearts', 1:'Clubs', 2:'Diamonds', 3:'Spades'} 
+    #RANKS = {0:'Ace', 1:'2', 2:'3', 3:'4', 4:'5', 5:'6', 6:'7', 7:'8', 8:'9', 9:'10', 10:'Jack', 11:'Dame', 12:'King'}
+    SUITS = {0:'H', 1:'C', 2:'D', 3:'S'} 
+    RANKS = {0:'1', 1:'2', 2:'3', 3:'4', 4:'5', 5:'6', 6:'7', 7:'8', 8:'9', 9:'T', 10:'J', 11:'Q', 12:'K'}
     RED = {0,2}
     BLACK = {1,3}
+    COLOR = {0:'red', 1:'black', 2:'red', 3:'black'}
     
     # DECORATORS #
     def assert_tuple(func):
@@ -101,8 +104,9 @@ class Card:
     
     # MAGIC METHODS #
     def __repr__(self):
-        return f"Card {self.RANKS[self.rank]} of {self.SUITS[self.suit]}"
-    
+        #return f"Card {self.RANKS[self.rank]} of {self.SUITS[self.suit]}"
+        return f"{colored(self.RANKS[self.rank] + self.SUITS[self.suit], self.COLOR[self.suit], 'on_light_green', ['bold'])}"
+        
     @assert_other
     def __eq__(self, other):
         if self.suit == other.suit:
@@ -204,10 +208,11 @@ class Stack_Base:
         if length == 1:
             return 1
         stack = self.stack
-        card = stack[length-1] # get last card
         takable = 1
-        for i in range(length-2, -1, -1): # loop from i=length-2 to i=0
-            if not stack[i].card_fits_on_stack(card):
+        for i in range(length-1): # from i=0 to i=length-2
+            top_card = stack[-1-i]
+            bottom_card = stack[-2-i]
+            if not bottom_card.card_fits_on_stack(top_card):
                 return takable
             takable += 1
         return takable
@@ -480,7 +485,8 @@ class Board:
     
     # MAGIC METHODS #
     def __repr__(self):
-        return f"Board containing: \n {self.pile} \n {self.fcs} \n {[stack for stack in self.stacks]}"
+        nl = '\n '
+        return f"Board containing: \n {self.pile} \n {self.fcs} \n {nl.join([str(stack) for stack in self.stacks])}"
         
     @assert_other
     def __eq__(self, other):
