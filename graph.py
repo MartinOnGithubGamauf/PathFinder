@@ -448,7 +448,7 @@ class Graph:
             print("")
         
         # print the path
-        print(f"Solved in {len(show)-1} moves.")
+        print(f"Solved in {len(show)//2} moves.")
             
             
 if __name__ == "__main__":
